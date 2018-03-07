@@ -1,0 +1,15 @@
+{
+  "short_name": "Shaders",
+  "name": "GLSL shader playground",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "24x24",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

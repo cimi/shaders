@@ -5,9 +5,16 @@
   "homepage": "http://cimi.github.io/shaders",
   "devDependencies": {
     "gh-pages": "^1.1.0",
+    "husky": "^0.14.3",
+    "lint-staged": "^7.0.1",
+    "prettier": "^1.11.1",
     "react-scripts": "1.1.1"
   },
+  "lint-staged": {
+    "*.{js,json,css}": ["prettier --write", "git add"]
+  },
   "scripts": {
+    "precommit": "lint-staged",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",

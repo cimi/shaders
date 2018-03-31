@@ -1,28 +1,47 @@
-.App {
-  text-align: center;
+.fade-appear {
+  opacity: 0.01;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+.fade-appear.fade-appear-active {
+  opacity: 1;
+  transition: opacity .5s ease-in;
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
+.gallery-item {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
 }
 
-.App-title {
-  font-size: 1.5em;
+.gallery-item img, .gallery-item canvas {
+  z-index: 100;
 }
 
-.App-intro {
-  font-size: large;
+.gallery-item .credits {
+  position: absolute;
+  left: 5px;
+  bottom: 5px;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 2px 5px;
+  margin: 0;
+  z-index: 101;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.gallery-item .credits .label {
+  color: #fff;
+  font-family: Helvetica,Arial,sans-serif;
+  text-decoration: none;
+  line-height: 0;
+  z-index: 104;
+}
+
+.gallery-item .credits .label.author {
+  font-size: 10px;
+  font-style: italic;
+  font-weight: 100;
+}
+
+.gallery-item .credits .label.title {
+  font-size: 14px;
+  font-weight: 600;
 }

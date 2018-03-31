@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import { GalleryItem } from './GalleryItem';
-import './App.css';
+import React, { Component } from "react";
+import { GalleryItem } from "./GalleryItem";
+import "./App.css";
 
 class App extends Component {
   render() {
@@ -9,7 +9,14 @@ class App extends Component {
       <div className="App">
         <GalleryItem
           name="256 colors"
-          attribution={{author: "Alex Ciminian"}}
+          attribution={{ author: "Alex Ciminian" }}
+          imgSrc="./frag/256-colors.png"
+          code={code}
+        />
+        <GalleryItem
+          name="257 colors"
+          attribution={{ author: "Alex Ciminian" }}
+          display={{ width: "250px", height: "250px", fullscreen: "fill" }}
           imgSrc="./frag/256-colors.png"
           code={code}
         />

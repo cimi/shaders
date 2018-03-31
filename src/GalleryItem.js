@@ -1,9 +1,10 @@
-import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import PropTypes from 'prop-types';
-import GlslCanvas from 'glslCanvas';
+import React from "react";
+import ReactCSSTransitionGroup from "react-addons-css-transition-group";
+import PropTypes from "prop-types";
+import classNames from "classnames";
+import GlslCanvas from "glslCanvas";
 
-import { DEFAULT_VERTEX_SHADER } from './utils';
+import { DEFAULT_VERTEX_SHADER } from "./utils";
 
 class GlCanvas extends React.Component {
   constructor(props) {
@@ -15,11 +16,9 @@ class GlCanvas extends React.Component {
   initCanvas() {
     const canvas = this.canvasRef.current;
     const { fragmentShader } = this.props.code;
-    const { width, height } = this.props;
-
+    const { width, height } = this.props.display;
     this.glslCanvas = new GlslCanvas(canvas);
     this.glslCanvas.load(fragmentShader);
-
     canvas.style.width = width;
     canvas.style.height = height;
   }
@@ -29,17 +28,19 @@ class GlCanvas extends React.Component {
   }
 
   render() {
-      const { width, height } = this.props.display;
-      const { fragmentShader, vertexShader } = this.props.code;
-      return (<FadeIn>
-          <canvas
-            width={width}
-            height={height}
-            data-fragment={fragmentShader}
-            data-vertex={vertexShader}
-            ref={this.canvasRef}
-          />
-        </FadeIn>);
+    const { width, height } = this.props.display;
+    const { fragmentShader, vertexShader } = this.props.code;
+    return (
+      <FadeIn>
+        <canvas
+          width={width}
+          height={height}
+          data-fragment={fragmentShader}
+          data-vertex={vertexShader}
+          ref={this.canvasRef}
+        />
+      </FadeIn>
+    );
   }
 }
 
@@ -47,28 +48,48 @@ GlCanvas.defaultProps = {
   code: {
     vertexShader: DEFAULT_VERTEX_SHADER,
     textures: []
-  },
+  }
 };
 
-
-const FadeIn = ({children}) => (<ReactCSSTransitionGroup
+const FadeIn = ({ children }) => (
+  <ReactCSSTransitionGroup
     transitionName="fade"
     transitionAppear={true}
     transitionAppearTimeout={500}
     transitionEnter={false}
-    transitionLeave={false}>
+    transitionLeave={false}
+  >
     {children}
-  </ReactCSSTransitionGroup>);
+  </ReactCSSTransitionGroup>
+);
 
 class GlModal extends React.Component {
   render() {
-    return <div className="glslModal"></div>
+    const { onClick } = this.props;
+    const { fullscreen } = this.props.display;
+    const display = {};
+    if (fullscreen === "square") {
+      display.width = window.innerHeight - 100 + "px";
+      display.height = window.innerHeight - 100 + "px";
+    } else if (fullscreen === "fill") {
+      display.width = "100%";
+      display.height = "100%";
+    }
+    const modalProps = Object.assign({}, this.props, { display });
+    const cssClasses = classNames("gallery-modal", fullscreen);
+    return (
+      <div className={cssClasses} onClick={onClick}>
+        <GlCanvas {...modalProps} />
+      </div>
+    );
   }
 }
 
-const Thumbnail = ({imgSrc, name}) => (<FadeIn>
+const Thumbnail = ({ imgSrc, name }) => (
+  <FadeIn>
     <img src={imgSrc} className="glslGallery_thumb" alt={name} />
-  </FadeIn>)
+  </FadeIn>
+);
 
 export class GalleryItem extends React.Component {
   constructor(props) {
@@ -78,41 +99,55 @@ export class GalleryItem extends React.Component {
   }
 
   handleClick = e => {
-    this.setState({ fullscreen: false });
-  }
+    console.log("click", this.state);
+    const { fullscreen } = this.state;
+    this.setState({ fullscreen: !fullscreen, active: false });
+  };
 
   handleMouseEnter = e => {
-    console.log('enter')
+    console.log("enter");
     this.setState({ active: true });
-  }
+  };
 
   handleMouseLeave = e => {
-    console.log('leave')
+    console.log("leave");
     this.setState({ active: false });
-  }
+  };
 
   render() {
     const { name, imgSrc } = this.props;
     const { width, height } = this.props.display;
     const { active, fullscreen } = this.state;
     const { author } = this.props.attribution;
-    return <div className="gallery-item"
-      width={width}
-      height={height}
-      onClick={this.handleClick}
-      onMouseEnter={this.handleMouseEnter}
-      onMouseLeave={this.handleMouseLeave}>
-      {fullscreen ?
-        <GlModal {...this.props} /> :
-        (active ?
-          <GlCanvas {...this.props} /> :
-          <Thumbnail imgSrc={imgSrc} name={name} />)
-      }
-      <div className="credits">
-        <p className="author label">{author}</p>
-        <p className="title label">{name}</p>
+    const item = (
+      <div
+        className="gallery-item"
+        width={width}
+        height={height}
+        onClick={this.handleClick}
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseLeave}
+      >
+        {active ? (
+          <GlCanvas {...this.props} />
+        ) : (
+          <Thumbnail imgSrc={imgSrc} name={name} />
+        )}
+        <div className="credits">
+          <p className="author label">{author}</p>
+          <p className="title label">{name}</p>
+        </div>
       </div>
-    </div>;
+    );
+    const modal = <GlModal {...this.props} onClick={this.handleClick} />;
+    return fullscreen ? (
+      <span>
+        {modal}
+        {item}
+      </span>
+    ) : (
+      item
+    );
   }
 }
 
@@ -127,7 +162,7 @@ GalleryItem.propTypes = {
   display: PropTypes.shape({
     width: PropTypes.string,
     height: PropTypes.string,
-    fullscreen: PropTypes.oneOf(['fill', 'square'])
+    fullscreen: PropTypes.oneOf(["fill", "square"])
   }),
   attribution: PropTypes.shape({
     author: PropTypes.string,
@@ -135,7 +170,7 @@ GalleryItem.propTypes = {
     credits: PropTypes.string,
     link: PropTypes.string
   })
-}
+};
 
 GalleryItem.defaultProps = {
   display: {
@@ -144,4 +179,4 @@ GalleryItem.defaultProps = {
     fullscreen: "square"
   },
   attribution: {}
-}
+};

@@ -20,12 +20,20 @@ int bounceOffEdges(vec2 coord) {
   return onEdge(coord) == 1 ? -1 : 1;
 }
 
+vec4 adjustUp(vec4 velocity) {
+  return vec4((vec3(velocity) + vec3(1.)) / 2., 1.);
+}
+
+vec4 adjustDown(vec4 velocity) {
+  return vec4(vec3(velocity) * 2. - vec3(1.), 1.);
+}
+
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
   int bounce = bounceOffEdges(coord);
 
   // we need to cancel out the bounce, it takes effect next turn
-  vec4 velocity = value(currentVelocity, coord) * 2. - vec4(vec3(1.), 0.);
+  vec4 velocity = adjustDown(value(currentVelocity, coord));
   vec4 position = value(previousPosition, coord);
   vec4 nextPosition = float(bounce) * velocity + position;
   // gl_FragColor = vec4(vec3(1., 0., 1.), 1.);

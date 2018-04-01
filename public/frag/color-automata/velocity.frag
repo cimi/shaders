@@ -7,6 +7,18 @@ int withinBounds(vec2 coord) {
   return 1;
 }
 
+bool isEdge(vec4 color) {
+  return vec3(1.) == vec3(color) || vec3(0.) == vec3(color);
+}
+
+vec4 adjustUp(vec4 velocity) {
+  return vec4((vec3(velocity) + vec3(1.)) / 2., 1.);
+}
+
+vec4 adjustDown(vec4 velocity) {
+  return vec4(vec3(velocity) * 2. - vec3(1.), 1.);
+}
+
 vec4 value(sampler2D texture, vec2 coord) {
   return withinBounds(coord) == 1 ? texture2D(texture, coord/64.0) : vec4(0.0);
 }
@@ -16,7 +28,8 @@ vec4 position(vec2 coord) {
 }
 
 vec4 velocity(vec2 coord) {
-  return value(previousVelocity, coord);
+  vec4 previous = adjustDown(value(previousVelocity, coord));
+  return isEdge(position(coord)) ? -1. * previous : previous;
 }
 
 vec4 sumAllNeighbors(sampler2D texture, vec2 coord) {
@@ -28,6 +41,17 @@ vec4 sumAllNeighbors(sampler2D texture, vec2 coord) {
     value(texture, coord+vec2(1.,-1.)) +
     value(texture, coord+vec2(1.,0.)) +
     value(texture, coord+vec2(1.,1.));
+}
+
+vec4 sumAllVelocities(vec2 coord) {
+  return velocity(coord+vec2(-1.,-1.)) +
+    velocity(coord+vec2(-1.,0.)) +
+    velocity(coord+vec2(-1.,1.)) +
+    velocity(coord+vec2(0.,-1.)) +
+    velocity(coord+vec2(0.,1.)) +
+    velocity(coord+vec2(1.,-1.)) +
+    velocity(coord+vec2(1.,0.)) +
+    velocity(coord+vec2(1.,1.));
 }
 
 vec4 diff(sampler2D texture, vec2 firstCoords, vec2 secondCoords) {
@@ -64,6 +88,10 @@ vec4 neighborAverage(sampler2D texture, vec2 coord) {
   return sumAllNeighbors(texture, coord) / neighborCount(coord);
 }
 
+vec4 neighborVelocityAverage(vec2 coord) {
+  return sumAllVelocities(coord) / neighborCount(coord);
+}
+
 int onEdge(vec2 coord) {
   if (withinBounds(coord) == 1 && (coord.x == 64.0 || coord.y == 64.0)) return 1;
   return 0;
@@ -76,11 +104,11 @@ float bounceOffEdge(vec2 coord) {
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
 
-  vec4 avgVelocity = neighborAverage(previousVelocity, coord);
+  vec4 avgVelocity = adjustDown(neighborVelocityAverage(coord));
   vec4 avgPosition = neighborAverage(previousPosition, coord);
   vec4 separation = separation(previousPosition, coord);
   float bounce = bounceOffEdge(coord);
-  vec4 nextVelocity = bounce * (avgVelocity + avgPosition - position(coord) - velocity(coord));
+  vec4 nextVelocity = bounce * (avgVelocity - velocity(coord) + avgPosition - position(coord));
   // range -255 255 we project to 0 255: + 256 / 2
-  gl_FragColor = vec4(vec3(nextVelocity) + vec3(0.2) / 2., 1.);
+  gl_FragColor = adjustUp(0.67 * nextVelocity);
 }

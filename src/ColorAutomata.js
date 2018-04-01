@@ -12,17 +12,17 @@ export class ColorAutomata extends React.Component {
 
   componentDidMount() {
     const { code } = this.props;
-    createColorAutomata(this.canvasRef.current, code);
+    createColorAutomata(this.canvasRef.current, code, {
+      width: 256,
+      height: 256
+    });
   }
 
   render() {
-    const { fragmentShader, vertexShader } = this.props.code;
     return (
       <canvas
-        width="64"
-        height="64"
-        data-fragment={fragmentShader}
-        data-vertex={vertexShader}
+        width="256"
+        height="256"
         ref={this.canvasRef}
         style={{ width: "256px", height: "256px", imageRendering: "pixelated" }}
       />
@@ -56,7 +56,7 @@ const createShader = (gl, type, src) => {
   return s;
 };
 
-const createTexture = (gl, textureUnit, image) => {
+const createTexture = (gl, textureUnit, image, { width, height }) => {
   const texture = gl.createTexture();
   gl.activeTexture(textureUnit);
   gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -64,8 +64,8 @@ const createTexture = (gl, textureUnit, image) => {
     gl.TEXTURE_2D,
     0,
     gl.RGB,
-    64,
-    64,
+    width,
+    height,
     0,
     gl.RGB,
     gl.UNSIGNED_BYTE,
@@ -80,36 +80,30 @@ const createTexture = (gl, textureUnit, image) => {
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-const randomImage = () => {
+const randomImage = ({ width, height }) => {
   let buffer = [];
-  for (let i = 0; i < 64; i++) {
-    for (let j = 0; j < 64; j++) {
-      buffer = buffer.concat([
-        randomInt(0, 255),
-        randomInt(0, 255),
-        randomInt(0, 255)
-      ]);
-    }
+  for (let i = 0; i < width * height * 3; i++) {
+    buffer[i] = randomInt(0, 255);
   }
   return new Uint8Array(buffer);
 };
-const blankImage = () => {
-  let buffer = [];
-  for (let i = 0; i < 64; i++) {
-    for (let j = 0; j < 64; j++) {
-      buffer = buffer.concat([0, 0, 0]);
-    }
-  }
-  return new Uint8Array(buffer);
+const blankImage = ({ width, height }) => {
+  let buffer = new Uint8Array(3 * width * height);
+  buffer.fill(0, 0, buffer.length);
+  return buffer;
 };
 class Automata {
-  constructor(gl) {
+  constructor(gl, { width, height }) {
     this.active = 0;
     const textures = [];
     const buffers = [];
+    const seed = randomImage({ width, height });
     for (let idx = 0; idx < 4; idx++) {
-      const image = idx < 2 ? randomImage() : blankImage();
-      const texture = createTexture(gl, gl[`TEXTURE${idx}`], image);
+      const image = idx < 2 ? seed : blankImage({ width, height });
+      const texture = createTexture(gl, gl[`TEXTURE${idx}`], image, {
+        width,
+        height
+      });
       const buffer = gl.createFramebuffer();
       gl.bindFramebuffer(gl.FRAMEBUFFER, buffer);
       gl.framebufferTexture2D(
@@ -161,99 +155,101 @@ class Automata {
   }
 }
 
-const createColorAutomata = (canvasEl, code) => {
-  const startStateImg = new Image();
-  startStateImg.onload = function() {
-    const gl = canvasEl.getContext("webgl");
+const createColorAutomata = (canvasEl, code, { width, height }) => {
+  const gl = canvasEl.getContext("webgl");
 
-    const vertexShader = createShader(
-      gl,
-      gl.VERTEX_SHADER,
-      "attribute vec2 coord; void main(void) { gl_Position = vec4(coord, 0.0, 1.0); }"
-    );
-    const displayFragShader = createShader(
-      gl,
-      gl.FRAGMENT_SHADER,
-      code.displayShader
-    );
-    const velocityFragShader = createShader(
-      gl,
-      gl.FRAGMENT_SHADER,
-      code.velocityShader
-    );
-    const positionFragShader = createShader(
-      gl,
-      gl.FRAGMENT_SHADER,
-      code.positionShader
-    );
+  const vertexShader = createShader(
+    gl,
+    gl.VERTEX_SHADER,
+    "attribute vec2 coord; void main(void) { gl_Position = vec4(coord, 0.0, 1.0); }"
+  );
+  const displayFragShader = createShader(
+    gl,
+    gl.FRAGMENT_SHADER,
+    code.displayShader
+  );
+  const velocityFragShader = createShader(
+    gl,
+    gl.FRAGMENT_SHADER,
+    code.velocityShader
+  );
+  const positionFragShader = createShader(
+    gl,
+    gl.FRAGMENT_SHADER,
+    code.positionShader
+  );
 
-    const velocityProg = createProgram(gl, vertexShader, velocityFragShader);
-    const positionProg = createProgram(gl, vertexShader, positionFragShader);
-    const displayProg = createProgram(gl, vertexShader, displayFragShader);
+  const velocityProg = createProgram(gl, vertexShader, velocityFragShader);
+  const positionProg = createProgram(gl, vertexShader, positionFragShader);
+  const displayProg = createProgram(gl, vertexShader, displayFragShader);
 
+  gl.useProgram(velocityProg);
+
+  const velocityProgCoordLoc = gl.getAttribLocation(velocityProg, "coord");
+  const positionProgCoordLoc = gl.getAttribLocation(positionProg, "coord");
+
+  const velocityUniforms = [
+    gl.getUniformLocation(velocityProg, "previousPosition"),
+    gl.getUniformLocation(velocityProg, "previousVelocity"),
+    gl.getUniformLocation(velocityProg, "size")
+  ];
+
+  const positionUniforms = [
+    gl.getUniformLocation(positionProg, "previousPosition"),
+    gl.getUniformLocation(positionProg, "currentVelocity"),
+    gl.getUniformLocation(positionProg, "size")
+  ];
+
+  const displayUniforms = [
+    gl.getUniformLocation(displayProg, "state"),
+    gl.getUniformLocation(displayProg, "size")
+  ];
+
+  const vertexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]),
+    gl.STATIC_DRAW
+  );
+
+  // Note we must bind ARRAY_BUFFER before running vertexAttribPointer!
+  // This is confusing and deserves a blog post
+  // https://stackoverflow.com/questions/7617668/glvertexattribpointer-needed-everytime-glbindbuffer-is-called
+  gl.vertexAttribPointer(velocityProgCoordLoc, 2, gl.FLOAT, false, 0, 0);
+
+  const elementBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
+  gl.bufferData(
+    gl.ELEMENT_ARRAY_BUFFER,
+    new Uint8Array([0, 1, 2, 3]),
+    gl.STATIC_DRAW
+  );
+
+  const automata = new Automata(gl, { width, height });
+  window.setInterval(function() {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, automata.velocityFrameBuffer());
     gl.useProgram(velocityProg);
+    gl.enableVertexAttribArray(velocityProgCoordLoc);
+    gl.uniform1i(velocityUniforms[0], automata.prevPositionTextureUnit());
+    gl.uniform1i(velocityUniforms[1], automata.prevVelocityTextureUnit());
+    gl.uniform2f(velocityUniforms[2], gl.canvas.width, gl.canvas.height);
+    gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
 
-    const velocityProgCoordLoc = gl.getAttribLocation(velocityProg, "coord");
-    const positionProgCoordLoc = gl.getAttribLocation(positionProg, "coord");
+    gl.bindFramebuffer(gl.FRAMEBUFFER, automata.positionFrameBuffer());
+    gl.useProgram(positionProg);
+    gl.enableVertexAttribArray(positionProgCoordLoc);
+    gl.uniform1i(positionUniforms[0], automata.prevPositionTextureUnit());
+    gl.uniform1i(positionUniforms[1], automata.nextVelocityTextureUnit());
+    gl.uniform2f(positionUniforms[2], gl.canvas.width, gl.canvas.height);
+    gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
 
-    const velocityUniforms = [
-      gl.getUniformLocation(velocityProg, "previousPosition"),
-      gl.getUniformLocation(velocityProg, "previousVelocity")
-    ];
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.useProgram(displayProg);
+    gl.uniform1i(displayUniforms[0], automata.nextPositionTextureUnit());
+    gl.uniform2f(displayUniforms[1], gl.canvas.width, gl.canvas.height);
+    gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
 
-    const positionUniforms = [
-      gl.getUniformLocation(positionProg, "previousPosition"),
-      gl.getUniformLocation(positionProg, "currentVelocity")
-    ];
-
-    const displayProgCoordLoc = gl.getAttribLocation(displayProg, "coord");
-    const displayProgStateLoc = gl.getUniformLocation(displayProg, "state");
-
-    const vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]),
-      gl.STATIC_DRAW
-    );
-
-    // Note we must bind ARRAY_BUFFER before running vertexAttribPointer!
-    // This is confusing and deserves a blog post
-    // https://stackoverflow.com/questions/7617668/glvertexattribpointer-needed-everytime-glbindbuffer-is-called
-    gl.vertexAttribPointer(velocityProgCoordLoc, 2, gl.FLOAT, false, 0, 0);
-
-    const elementBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
-    gl.bufferData(
-      gl.ELEMENT_ARRAY_BUFFER,
-      new Uint8Array([0, 1, 2, 3]),
-      gl.STATIC_DRAW
-    );
-
-    const automata = new Automata(gl, startStateImg);
-    window.setInterval(function() {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, automata.velocityFrameBuffer());
-      gl.useProgram(velocityProg);
-      gl.enableVertexAttribArray(velocityProgCoordLoc);
-      gl.uniform1i(velocityUniforms[0], automata.prevPositionTextureUnit());
-      gl.uniform1i(velocityUniforms[1], automata.prevVelocityTextureUnit());
-      gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-
-      gl.bindFramebuffer(gl.FRAMEBUFFER, automata.positionFrameBuffer());
-      gl.useProgram(positionProg);
-      gl.enableVertexAttribArray(positionProgCoordLoc);
-      gl.uniform1i(positionUniforms[0], automata.prevPositionTextureUnit());
-      gl.uniform1i(positionUniforms[1], automata.nextVelocityTextureUnit());
-      gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.useProgram(displayProg);
-      gl.uniform1i(displayProgStateLoc, automata.nextPositionTextureUnit());
-      gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-
-      automata.swap();
-    }, 100);
-  };
-
-  startStateImg.src = "frag/game-of-life/start-state.png";
+    automata.swap();
+  }, 100);
 };

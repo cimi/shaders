@@ -24,7 +24,7 @@ export class ColorAutomata extends React.Component {
         width="256"
         height="256"
         ref={this.canvasRef}
-        style={{ width: "256px", height: "256px", imageRendering: "pixelated" }}
+        style={{ width: "1024px", height: "1024px" }}
       />
     );
   }
@@ -94,12 +94,12 @@ const blankImage = ({ width, height }) => {
 };
 class Automata {
   constructor(gl, { width, height }) {
-    this.active = 0;
+    this.active = 1;
     const textures = [];
     const buffers = [];
     const seed = randomImage({ width, height });
     for (let idx = 0; idx < 4; idx++) {
-      const image = idx < 2 ? seed : blankImage({ width, height });
+      const image = idx < 1 ? seed : blankImage({ width, height });
       const texture = createTexture(gl, gl[`TEXTURE${idx}`], image, {
         width,
         height

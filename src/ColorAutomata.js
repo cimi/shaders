@@ -24,7 +24,7 @@ export class ColorAutomata extends React.Component {
         width="256"
         height="256"
         ref={this.canvasRef}
-        style={{ width: "1024px", height: "1024px" }}
+        style={{ width: "256px", height: "256px" }}
       />
     );
   }

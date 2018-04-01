@@ -87,11 +87,11 @@ float neighborCount(vec2 coord) {
 }
 
 vec4 neighborAverage(sampler2D texture, vec2 coord) {
-  return sumAllNeighbors(texture, coord) / 1.;
+  return sumAllNeighbors(texture, coord) / 2.;
 }
 
 vec4 neighborVelocityAverage(vec2 coord) {
-  return sumAllVelocities(coord) / 8.;
+  return sumAllVelocities(coord) / 2.;
 }
 
 void main(void) {

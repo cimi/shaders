@@ -19,57 +19,77 @@ export class GameOfLife extends React.Component {
     const { fragmentShader, vertexShader } = this.props.code;
     return (
       <canvas
-        width="250px"
-        height="250px"
+        width="64"
+        height="64"
         data-fragment={fragmentShader}
         data-vertex={vertexShader}
         ref={this.canvasRef}
+        style={{ width: "256px", height: "256px", imageRendering: "pixelated" }}
       />
     );
   }
 }
+
+const createProgram = (gl, vertexShader, fragmentShader) => {
+  const program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error("Error linking program", gl.getProgramInfoLog(program));
+  }
+  return program;
+};
+
+const createShader = (gl, type, src) => {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error(
+      "Could not compile shader",
+      type,
+      src,
+      gl.getShaderInfoLog(s)
+    );
+  }
+  return s;
+};
+
+const createTexture = (gl, activeTexture, image) => {
+  const texture = gl.createTexture();
+  gl.activeTexture(activeTexture);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  return texture;
+};
 
 const createGameOfLife = (canvasEl, code) => {
   const startStateImg = new Image();
   startStateImg.onload = function() {
     const gl = canvasEl.getContext("webgl");
 
-    function createShader(ty, src) {
-      const s = gl.createShader(ty);
-      gl.shaderSource(s, src);
-      gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-        console.error(
-          "Could not compile shader",
-          ty,
-          src,
-          gl.getShaderInfoLog(s)
-        );
-      }
-      return s;
-    }
     const vertexShader = createShader(
+      gl,
       gl.VERTEX_SHADER,
       "attribute vec2 coord; void main(void) { gl_Position = vec4(coord, 0.0, 1.0); }"
     );
     const fragShaderDisplay = createShader(
+      gl,
       gl.FRAGMENT_SHADER,
       code.displayShader
     );
-    const fragShaderStepper = createShader(gl.FRAGMENT_SHADER, code.stepShader);
+    const fragShaderStepper = createShader(
+      gl,
+      gl.FRAGMENT_SHADER,
+      code.stepShader
+    );
 
-    function createProgram(vs, fs) {
-      const p = gl.createProgram();
-      gl.attachShader(p, vs);
-      gl.attachShader(p, fs);
-      gl.linkProgram(p);
-      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
-        console.error("Error linking program", gl.getProgramInfoLog(p));
-      }
-      return p;
-    }
-    const displayProg = createProgram(vertexShader, fragShaderDisplay);
-    const stepperProg = createProgram(vertexShader, fragShaderStepper);
+    const displayProg = createProgram(gl, vertexShader, fragShaderDisplay);
+    const stepperProg = createProgram(gl, vertexShader, fragShaderStepper);
 
     gl.useProgram(stepperProg);
 
@@ -103,35 +123,8 @@ const createGameOfLife = (canvasEl, code) => {
       gl.STATIC_DRAW
     );
 
-    const texture0 = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, texture0);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGB,
-      gl.RGB,
-      gl.UNSIGNED_BYTE,
-      startStateImg
-    );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.generateMipmap(gl.TEXTURE_2D);
-
-    const texture1 = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0 + 1);
-    gl.bindTexture(gl.TEXTURE_2D, texture1);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGB,
-      gl.RGB,
-      gl.UNSIGNED_BYTE,
-      startStateImg
-    );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.generateMipmap(gl.TEXTURE_2D);
+    const texture0 = createTexture(gl, gl.TEXTURE0, startStateImg);
+    const texture1 = createTexture(gl, gl.TEXTURE0 + 1, startStateImg);
 
     const framebuffers = [gl.createFramebuffer(), gl.createFramebuffer()];
 
@@ -156,7 +149,6 @@ const createGameOfLife = (canvasEl, code) => {
     let nextStateIndex = 0;
     window.setInterval(function() {
       const previousStateIndex = 1 - nextStateIndex;
-
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[nextStateIndex]);
       gl.useProgram(stepperProg);
       gl.enableVertexAttribArray(stepperProgCoordLoc);
@@ -171,5 +163,6 @@ const createGameOfLife = (canvasEl, code) => {
       nextStateIndex = previousStateIndex;
     }, 100);
   };
+
   startStateImg.src = "frag/game-of-life/start-state.png";
 };

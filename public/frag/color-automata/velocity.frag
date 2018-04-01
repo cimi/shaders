@@ -8,15 +8,15 @@ int withinBounds(vec2 coord) {
 }
 
 bool isEdge(vec4 color) {
-  return vec3(color) == vec3(1.) || 0. == length(vec3(color));
+  return length(vec3(color)) > .9 || length(vec3(color)) < .1;
 }
 
 vec4 adjustUp(vec4 velocity) {
-  return vec4((vec3(velocity) + vec3(1.)) / 2., 1.);
+  return vec4(vec3(velocity) + vec3(.5), 1.);
 }
 
 vec4 adjustDown(vec4 velocity) {
-  return vec4(vec3(velocity) * 2. - vec3(1.), 1.);
+  return vec4(vec3(velocity) - vec3(.5), 1.);
 }
 
 vec4 value(sampler2D texture, vec2 coord) {
@@ -28,8 +28,11 @@ vec4 position(vec2 coord) {
 }
 
 vec4 velocity(vec2 coord) {
+  if (withinBounds(coord) == 0) {
+    return vec4(0.);
+  }
   vec4 previous = adjustDown(value(previousVelocity, coord));
-  return isEdge(position(coord)) ? -1. * previous : previous;
+  return isEdge(position(coord)) ? -1.5 * previous : previous;
 }
 
 vec4 sumAllNeighbors(sampler2D texture, vec2 coord) {
@@ -59,11 +62,11 @@ vec4 diff(sampler2D texture, vec2 firstCoords, vec2 secondCoords) {
     return vec4(1.);
   }
   vec4 d = value(texture, firstCoords) - value(texture, secondCoords);
-  return length(d) < 8.0 ? d : vec4(0.0);
+  return length(d) < 64.0 ? d : vec4(0.0);
 }
 
 vec4 separation(sampler2D texture, vec2 coord) {
-  vec4 separation = diff(texture, coord, coord + vec2(-1.,-1.)) +
+  vec4 separation = diff(texture, coord, coord+vec2(-1.,-1.)) +
     diff(texture, coord, coord+vec2(-1.,0.)) +
     diff(texture, coord, coord+vec2(-1.,1.)) +
     diff(texture, coord, coord+vec2(0.,-1.)) +
@@ -72,7 +75,7 @@ vec4 separation(sampler2D texture, vec2 coord) {
     diff(texture, coord, coord+vec2(1.,0.)) +
     diff(texture, coord, coord+vec2(1.,1.));
   // normalize separation vector
-  return 4. * normalize(separation);
+  return normalize(separation) / 2.;
 }
 
 float neighborCount(vec2 coord) {
@@ -87,18 +90,18 @@ float neighborCount(vec2 coord) {
 }
 
 vec4 neighborAverage(sampler2D texture, vec2 coord) {
-  return sumAllNeighbors(texture, coord) / 2.;
+  return sumAllNeighbors(texture, coord) / neighborCount(coord);
 }
 
 vec4 neighborVelocityAverage(vec2 coord) {
-  return sumAllVelocities(coord) / 2.;
+  return sumAllVelocities(coord) / neighborCount(coord);
 }
 
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
 
-  vec4 avgVelocity = adjustDown(neighborVelocityAverage(coord));
-  vec4 avgPosition = neighborAverage(previousPosition, coord);
+  vec4 avgVelocity = neighborVelocityAverage(coord);
+  vec4 avgPosition = .7 * neighborAverage(previousPosition, coord);
   vec4 separation = separation(previousPosition, coord);
 
   vec4 nextVelocity = separation + (avgVelocity - velocity(coord)) + (avgPosition - position(coord));

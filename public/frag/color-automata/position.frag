@@ -8,7 +8,7 @@ vec4 value(sampler2D texture, vec2 coord) {
 }
 
 vec4 adjustDown(vec4 velocity) {
-  return vec4(vec3(velocity) * 2. - vec3(1.), 1.);
+  return vec4(vec3(velocity) - vec3(.5), 1.);
 }
 
 void main(void) {

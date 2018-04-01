@@ -13,18 +13,18 @@ export class ColorAutomata extends React.Component {
   componentDidMount() {
     const { code } = this.props;
     createColorAutomata(this.canvasRef.current, code, {
-      width: 256,
-      height: 256
+      width: 512,
+      height: 512
     });
   }
 
   render() {
     return (
       <canvas
-        width="256"
-        height="256"
+        width="512"
+        height="512"
         ref={this.canvasRef}
-        style={{ width: "512px", height: "512px" }}
+        style={{ width: "1024px", height: "1024px" }}
       />
     );
   }
@@ -251,5 +251,5 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
 
     automata.swap();
-  }, 100);
+  }, 30);
 };

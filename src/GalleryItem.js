@@ -8,7 +8,7 @@ export class GalleryItem extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { active: false };
+    this.state = { active: true };
   }
 
   handleClick = e => {
@@ -44,7 +44,12 @@ export class GalleryItem extends React.Component {
         {active ? (
           preview(this.props)
         ) : (
-          <Thumbnail imgSrc={imgSrc} name={name} />
+          <Thumbnail
+            imgSrc={imgSrc}
+            name={name}
+            width={width}
+            height={height}
+          />
         )}
         <div className="credits">
           <p className="author label">{author}</p>
@@ -86,8 +91,8 @@ GalleryItem.propTypes = {
 
 GalleryItem.defaultProps = {
   display: {
-    width: "250px",
-    height: "250px",
+    width: "256px",
+    height: "256px",
     fullscreen: "square"
   },
   attribution: {},

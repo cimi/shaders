@@ -27,12 +27,20 @@ vec4 position(vec2 coord) {
   return value(previousPosition, coord);
 }
 
+vec4 invertVelocity(vec4 position, vec4 previousVelocity) {
+  vec4 velocity = vec4(1.);
+  velocity.r = position.r == 1. || position.r == 0. ? 1. - previousVelocity.r : previousVelocity.r;
+  velocity.g = position.g == 1. || position.g == 0. ? 1. - previousVelocity.g : previousVelocity.g;
+  velocity.b = position.b == 1. || position.b == 0. ? 1. - previousVelocity.b : previousVelocity.b;
+  return velocity;
+}
+
 vec4 velocity(vec2 coord) {
   if (withinBounds(coord) == 0) {
     return vec4(0.);
   }
   vec4 previous = adjustDown(value(previousVelocity, coord));
-  return isEdge(position(coord)) ? vec4(vec3(1.) - vec3(previous), 1.) : previous;
+  return invertVelocity(position(coord), previous);
 }
 
 vec4 sumAllNeighbors(sampler2D texture, vec2 coord) {
@@ -75,7 +83,7 @@ vec4 separation(sampler2D texture, vec2 coord) {
     diff(texture, coord, coord+vec2(1.,0.)) +
     diff(texture, coord, coord+vec2(1.,1.));
   // normalize separation vector
-  return normalize(separation) / 2.;
+  return normalize(separation) * 4.;
 }
 
 float neighborCount(vec2 coord) {
@@ -105,5 +113,5 @@ void main(void) {
   vec4 separation = separation(previousPosition, coord);
 
   vec4 nextVelocity = separation * (avgVelocity - velocity(coord)) + (avgPosition - position(coord));
-  gl_FragColor = adjustUp(0.67 * nextVelocity);
+  gl_FragColor = adjustUp(0.33 * nextVelocity);
 }

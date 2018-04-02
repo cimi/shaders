@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import webglCanvas from "glslCanvas";
 
 import { DEFAULT_VERTEX_SHADER } from "../utils";
@@ -41,7 +42,13 @@ export class GlslCanvas extends React.Component {
     );
   }
 }
-
+GlslCanvas.propTypes = {
+  code: PropTypes.shape({
+    fragmentShader: PropTypes.string.isRequired,
+    vertexShader: PropTypes.string,
+    textures: PropTypes.arrayOf(PropTypes.string)
+  })
+};
 GlslCanvas.defaultProps = {
   code: {
     vertexShader: DEFAULT_VERTEX_SHADER,

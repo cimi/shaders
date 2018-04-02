@@ -8,7 +8,7 @@ export class GalleryItem extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { active: true };
+    this.state = { active: false };
   }
 
   handleClick = e => {
@@ -71,11 +71,6 @@ export class GalleryItem extends React.Component {
 GalleryItem.propTypes = {
   name: PropTypes.string.isRequired,
   imgSrc: PropTypes.string.isRequired,
-  code: PropTypes.shape({
-    fragmentShader: PropTypes.string.isRequired,
-    vertexShader: PropTypes.string,
-    textures: PropTypes.arrayOf(PropTypes.string)
-  }),
   display: PropTypes.shape({
     width: PropTypes.string,
     height: PropTypes.string,

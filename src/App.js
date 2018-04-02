@@ -10,27 +10,26 @@ class App extends Component {
       <div className="App">
         <GalleryItem
           name="256 colors"
-          attribution={{ author: "Alex Ciminian" }}
           imgSrc="./frag/256-colors.png"
           code={{ fragmentShader: shaders[0] }}
         />
         <GalleryItem
           name="Glider gun"
-          attribution={{ author: "Jim Fisher" }}
-          imgSrc="./frag/game-of-life/start-state.png"
+          imgSrc="./frag/game-of-life/glider-gun.png"
           code={{ displayShader: shaders[1], stepShader: shaders[2] }}
           preview={props => <GameOfLife {...props} />}
+          full={() => null}
         />
         <GalleryItem
           name="Color Automata (WIP)"
-          attribution={{ author: "Alex Ciminian" }}
-          imgSrc="./frag/256-colors.png"
+          imgSrc="./frag/color-automata/color-automata.png"
           code={{
             displayShader: shaders[3],
             velocityShader: shaders[5],
             positionShader: shaders[4]
           }}
           preview={props => <ColorAutomata {...props} />}
+          full={() => null}
         />
       </div>
     );

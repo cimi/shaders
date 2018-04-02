@@ -1,24 +1,35 @@
 import React, { Component } from "react";
 import { GalleryItem } from "./GalleryItem";
-import "./App.css";
+import { GameOfLife } from "./GameOfLife";
+import { ColorAutomata } from "./ColorAutomata";
 
 class App extends Component {
   render() {
-    const { code } = this.props;
+    const { shaders } = this.props;
     return (
       <div className="App">
         <GalleryItem
           name="256 colors"
-          attribution={{ author: "Alex Ciminian" }}
           imgSrc="./frag/256-colors.png"
-          code={code}
+          code={{ fragmentShader: shaders[0] }}
         />
         <GalleryItem
-          name="257 colors"
-          attribution={{ author: "Alex Ciminian" }}
-          display={{ width: "250px", height: "250px", fullscreen: "fill" }}
-          imgSrc="./frag/256-colors.png"
-          code={code}
+          name="Glider gun"
+          imgSrc="./frag/game-of-life/glider-gun.png"
+          code={{ displayShader: shaders[1], stepShader: shaders[2] }}
+          preview={props => <GameOfLife {...props} />}
+          full={() => null}
+        />
+        <GalleryItem
+          name="Color Automata (WIP)"
+          imgSrc="./frag/color-automata/color-automata.png"
+          code={{
+            displayShader: shaders[3],
+            velocityShader: shaders[5],
+            positionShader: shaders[4]
+          }}
+          preview={props => <ColorAutomata {...props} />}
+          full={() => null}
         />
       </div>
     );

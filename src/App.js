@@ -15,15 +15,23 @@ class App extends Component {
           imgSrc="./frag/256-colors.png"
           code={{ fragmentShader: shaders[0] }}
         />
-        <GameOfLife
+        <GalleryItem
+          name="Glider gun"
+          attribution={{ author: "Jim Fisher" }}
+          imgSrc="./frag/256-colors.png"
           code={{ displayShader: shaders[1], stepShader: shaders[2] }}
+          preview={props => <GameOfLife {...props} />}
         />
-        <ColorAutomata
+        <GalleryItem
+          name="Color Automata (WIP)"
+          attribution={{ author: "Alex Ciminian" }}
+          imgSrc="./frag/256-colors.png"
           code={{
             displayShader: shaders[3],
             velocityShader: shaders[5],
             positionShader: shaders[4]
           }}
+          preview={props => <ColorAutomata {...props} />}
         />
       </div>
     );

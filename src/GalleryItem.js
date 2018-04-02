@@ -28,7 +28,7 @@ export class GalleryItem extends React.Component {
   };
 
   render() {
-    const { name, imgSrc } = this.props;
+    const { name, imgSrc, preview, full } = this.props;
     const { width, height } = this.props.display;
     const { active, fullscreen } = this.state;
     const { author } = this.props.attribution;
@@ -42,7 +42,7 @@ export class GalleryItem extends React.Component {
         onMouseLeave={this.handleMouseLeave}
       >
         {active ? (
-          <GlslCanvas {...this.props} />
+          preview(this.props)
         ) : (
           <Thumbnail imgSrc={imgSrc} name={name} />
         )}
@@ -52,10 +52,9 @@ export class GalleryItem extends React.Component {
         </div>
       </div>
     );
-    const modal = <GlslModal {...this.props} onClick={this.handleClick} />;
     return fullscreen ? (
       <span>
-        {modal}
+        {full(this.props, this.handleClick)}
         {item}
       </span>
     ) : (
@@ -91,5 +90,7 @@ GalleryItem.defaultProps = {
     height: "250px",
     fullscreen: "square"
   },
-  attribution: {}
+  attribution: {},
+  preview: props => <GlslCanvas {...props} />,
+  full: (props, onClick) => <GlslModal {...props} onClick={onClick} />
 };

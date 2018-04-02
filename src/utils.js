@@ -10,3 +10,29 @@ void main() {
     v_texcoord = a_texcoord;
 }
 `;
+
+export const createProgram = (gl, vertexShader, fragmentShader) => {
+  const program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error("Error linking program", gl.getProgramInfoLog(program));
+  }
+  return program;
+};
+
+export const createShader = (gl, type, src) => {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error(
+      "Could not compile shader",
+      type,
+      src,
+      gl.getShaderInfoLog(s)
+    );
+  }
+  return s;
+};

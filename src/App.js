@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { GalleryItem } from "./GalleryItem";
-import { GameOfLife } from "./GameOfLife";
-import { ColorAutomata } from "./ColorAutomata";
+import { GalleryItem } from "./components/GalleryItem";
+import { GameOfLife } from "./components/gallery/GameOfLife";
+import { ColorAutomata } from "./components/gallery/ColorAutomata";
 
 class App extends Component {
   render() {

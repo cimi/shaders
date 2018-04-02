@@ -1,7 +1,5 @@
 import React from "react";
-import ReactCSSTransitionGroup from "react-addons-css-transition-group";
-import PropTypes from "prop-types";
-import classNames from "classnames";
+import { createProgram, createShader } from "../../utils";
 
 export class GameOfLife extends React.Component {
   constructor(props) {
@@ -29,32 +27,6 @@ export class GameOfLife extends React.Component {
     );
   }
 }
-
-const createProgram = (gl, vertexShader, fragmentShader) => {
-  const program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.error("Error linking program", gl.getProgramInfoLog(program));
-  }
-  return program;
-};
-
-const createShader = (gl, type, src) => {
-  const s = gl.createShader(type);
-  gl.shaderSource(s, src);
-  gl.compileShader(s);
-  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-    console.error(
-      "Could not compile shader",
-      type,
-      src,
-      gl.getShaderInfoLog(s)
-    );
-  }
-  return s;
-};
 
 const createTexture = (gl, activeTexture, image) => {
   const texture = gl.createTexture();
@@ -99,7 +71,6 @@ const createGameOfLife = (canvasEl, code) => {
       "previousState"
     );
 
-    const displayProgCoordLoc = gl.getAttribLocation(displayProg, "coord");
     const displayProgStateLoc = gl.getUniformLocation(displayProg, "state");
 
     const vertexBuffer = gl.createBuffer();

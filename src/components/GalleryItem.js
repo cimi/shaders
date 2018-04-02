@@ -1,8 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { GlslCanvas } from "./components/GlslCanvas";
-import { GlslModal } from "./components/GlslModal";
-import { Thumbnail } from "./components/Thumbnail";
+import { GlslCanvas } from "./GlslCanvas";
+import { GlslModal } from "./GlslModal";
+import { Thumbnail } from "./Thumbnail";
 
 export class GalleryItem extends React.Component {
   constructor(props) {

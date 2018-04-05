@@ -4,6 +4,7 @@ import { GameOfLife } from "./components/gallery/GameOfLife";
 import { ColorAutomata } from "./components/gallery/ColorAutomata";
 import { RandomLightning } from "./components/gallery/randoms/RandomLightning";
 import { NiceNoise } from "./components/gallery/randoms/NiceNoise";
+import { MazeFill } from "./components/gallery/randoms/MazeFill";
 
 class App extends Component {
   render() {
@@ -71,6 +72,17 @@ class App extends Component {
             positionShader: shaders["frag/randoms/maze-automata/position.frag"]
           }}
           preview={props => <NiceNoise {...props} />}
+          full={() => null}
+        />
+        <GalleryItem
+          name="Maze Fill"
+          imgSrc="./frag/color-automata/color-automata.png"
+          code={{
+            displayShader: shaders["frag/randoms/maze-fill/display.frag"],
+            velocityShader: shaders["frag/randoms/maze-fill/velocity.frag"],
+            positionShader: shaders["frag/randoms/maze-fill/position.frag"]
+          }}
+          preview={props => <MazeFill {...props} />}
           full={() => null}
         />
       </div>

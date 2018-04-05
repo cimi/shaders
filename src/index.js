@@ -9,7 +9,8 @@ const automata = [
   "frag/color-automata/",
   "frag/randoms/random-lightning/",
   "frag/randoms/nice-noise/",
-  "frag/randoms/maze-automata/"
+  "frag/randoms/maze-automata/",
+  "frag/randoms/maze-fill/"
 ];
 const shaderVariants = ["display", "velocity", "position"];
 const automataShaders = automata

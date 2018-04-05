@@ -62,6 +62,17 @@ class App extends Component {
           preview={props => <NiceNoise {...props} />}
           full={() => null}
         />
+        <GalleryItem
+          name="Maze Automata"
+          imgSrc="./frag/color-automata/color-automata.png"
+          code={{
+            displayShader: shaders["frag/randoms/maze-automata/display.frag"],
+            velocityShader: shaders["frag/randoms/maze-automata/velocity.frag"],
+            positionShader: shaders["frag/randoms/maze-automata/position.frag"]
+          }}
+          preview={props => <NiceNoise {...props} />}
+          full={() => null}
+        />
       </div>
     );
   }

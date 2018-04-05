@@ -5,14 +5,29 @@ import "./index.css";
 
 import App from "./App";
 
+const automata = ["frag/color-automata/", "frag/randoms/random-lightning/"];
+
+const shaderVariants = ["display", "velocity", "position"];
+const automataShaders = automata
+  .map(path => shaderVariants.map(variant => `${path}${variant}.frag`))
+  .reduce((acc, shaders) => acc.concat(shaders), []);
+console.log(automataShaders);
 const promises = [
   "frag/256-colors.frag",
   "frag/game-of-life/display.frag",
-  "frag/game-of-life/game-of-life.frag",
-  "frag/color-automata/display.frag",
-  "frag/color-automata/position.frag",
-  "frag/color-automata/velocity.frag"
-].map(frag => fetch(frag).then(response => response.text()));
+  "frag/game-of-life/game-of-life.frag"
+]
+  .concat(automataShaders)
+  .map(frag =>
+    fetch(frag)
+      .then(response => response.text())
+      .then(responseText => ({ [frag]: responseText }))
+  );
+
 Promise.all(promises).then(shaders => {
-  ReactDOM.render(<App shaders={shaders} />, document.getElementById("root"));
+  console.log(shaders);
+  ReactDOM.render(
+    <App shaders={Object.assign({}, ...shaders)} />,
+    document.getElementById("root")
+  );
 });

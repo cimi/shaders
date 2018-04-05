@@ -39,8 +39,8 @@ class App extends Component {
         />
         <br />
         <GalleryItem
-          name="Random Lightning"
-          imgSrc="./frag/color-automata/color-automata.png"
+          name="Random #1: Lightning"
+          imgSrc="./frag/randoms/random-lightning/random-lightning.png"
           code={{
             displayShader:
               shaders["frag/randoms/random-lightning/display.frag"],
@@ -53,8 +53,8 @@ class App extends Component {
           full={() => null}
         />
         <GalleryItem
-          name="Nice Noise"
-          imgSrc="./frag/color-automata/color-automata.png"
+          name="Random #2: Friendly Noise"
+          imgSrc="./frag/randoms/nice-noise/nice-noise.png"
           code={{
             displayShader: shaders["frag/randoms/nice-noise/display.frag"],
             velocityShader: shaders["frag/randoms/nice-noise/velocity.frag"],
@@ -64,8 +64,8 @@ class App extends Component {
           full={() => null}
         />
         <GalleryItem
-          name="Maze Automata"
-          imgSrc="./frag/color-automata/color-automata.png"
+          name="Random #3: Maze Automata"
+          imgSrc="./frag/randoms/maze-automata/maze-automata.png"
           code={{
             displayShader: shaders["frag/randoms/maze-automata/display.frag"],
             velocityShader: shaders["frag/randoms/maze-automata/velocity.frag"],
@@ -75,8 +75,8 @@ class App extends Component {
           full={() => null}
         />
         <GalleryItem
-          name="Maze Fill"
-          imgSrc="./frag/color-automata/color-automata.png"
+          name="Random 4: Grid Fill"
+          imgSrc="./frag/randoms/maze-fill/maze-fill.png"
           code={{
             displayShader: shaders["frag/randoms/maze-fill/display.frag"],
             velocityShader: shaders["frag/randoms/maze-fill/velocity.frag"],

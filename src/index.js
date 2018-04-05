@@ -5,8 +5,11 @@ import "./index.css";
 
 import App from "./App";
 
-const automata = ["frag/color-automata/", "frag/randoms/random-lightning/"];
-
+const automata = [
+  "frag/color-automata/",
+  "frag/randoms/random-lightning/",
+  "frag/randoms/nice-noise/"
+];
 const shaderVariants = ["display", "velocity", "position"];
 const automataShaders = automata
   .map(path => shaderVariants.map(variant => `${path}${variant}.frag`))

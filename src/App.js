@@ -3,6 +3,7 @@ import { GalleryItem } from "./components/GalleryItem";
 import { GameOfLife } from "./components/gallery/GameOfLife";
 import { ColorAutomata } from "./components/gallery/ColorAutomata";
 import { RandomLightning } from "./components/gallery/randoms/RandomLightning";
+import { NiceNoise } from "./components/gallery/randoms/NiceNoise";
 
 class App extends Component {
   render() {
@@ -48,6 +49,17 @@ class App extends Component {
               shaders["frag/randoms/random-lightning/position.frag"]
           }}
           preview={props => <RandomLightning {...props} />}
+          full={() => null}
+        />
+        <GalleryItem
+          name="Nice Noise"
+          imgSrc="./frag/color-automata/color-automata.png"
+          code={{
+            displayShader: shaders["frag/randoms/nice-noise/display.frag"],
+            velocityShader: shaders["frag/randoms/nice-noise/velocity.frag"],
+            positionShader: shaders["frag/randoms/nice-noise/position.frag"]
+          }}
+          preview={props => <NiceNoise {...props} />}
           full={() => null}
         />
       </div>

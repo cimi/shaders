@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import { GalleryItem } from "./components/GalleryItem";
 import { GameOfLife } from "./components/gallery/GameOfLife";
 import { ColorAutomata } from "./components/gallery/ColorAutomata";
-import { RandomLightning } from "./components/gallery/randoms/RandomLightning";
-import { NiceNoise } from "./components/gallery/randoms/NiceNoise";
 import { MazeFill } from "./components/gallery/randoms/MazeFill";
 
 class App extends Component {
@@ -49,7 +47,7 @@ class App extends Component {
             positionShader:
               shaders["frag/randoms/random-lightning/position.frag"]
           }}
-          preview={props => <RandomLightning {...props} />}
+          preview={props => <ColorAutomata {...props} />}
           full={() => null}
         />
         <GalleryItem
@@ -60,7 +58,7 @@ class App extends Component {
             velocityShader: shaders["frag/randoms/nice-noise/velocity.frag"],
             positionShader: shaders["frag/randoms/nice-noise/position.frag"]
           }}
-          preview={props => <NiceNoise {...props} />}
+          preview={props => <ColorAutomata {...props} />}
           full={() => null}
         />
         <GalleryItem
@@ -71,7 +69,7 @@ class App extends Component {
             velocityShader: shaders["frag/randoms/maze-automata/velocity.frag"],
             positionShader: shaders["frag/randoms/maze-automata/position.frag"]
           }}
-          preview={props => <NiceNoise {...props} />}
+          preview={props => <ColorAutomata {...props} />}
           full={() => null}
         />
         <GalleryItem

@@ -18,7 +18,7 @@ class App extends Component {
           name="Glider gun"
           imgSrc="./frag/game-of-life/glider-gun.png"
           code={{
-            displayShader: shaders["frag/game-of-life/display.frag"],
+            displayShader: shaders["frag/display.frag"],
             stepShader: shaders["frag/game-of-life/game-of-life.frag"]
           }}
           preview={props => <GameOfLife {...props} />}
@@ -28,7 +28,7 @@ class App extends Component {
           name="Color Automata (WIP)"
           imgSrc="./frag/color-automata/color-automata.png"
           code={{
-            displayShader: shaders["frag/color-automata/display.frag"],
+            displayShader: shaders["frag/display.frag"],
             velocityShader: shaders["frag/color-automata/velocity.frag"],
             positionShader: shaders["frag/color-automata/position.frag"]
           }}
@@ -40,8 +40,7 @@ class App extends Component {
           name="Random #1: Lightning"
           imgSrc="./frag/randoms/random-lightning/random-lightning.png"
           code={{
-            displayShader:
-              shaders["frag/randoms/random-lightning/display.frag"],
+            displayShader: shaders["frag/display.frag"],
             velocityShader:
               shaders["frag/randoms/random-lightning/velocity.frag"],
             positionShader:
@@ -54,7 +53,7 @@ class App extends Component {
           name="Random #2: Friendly Noise"
           imgSrc="./frag/randoms/nice-noise/nice-noise.png"
           code={{
-            displayShader: shaders["frag/randoms/nice-noise/display.frag"],
+            displayShader: shaders["frag/display.frag"],
             velocityShader: shaders["frag/randoms/nice-noise/velocity.frag"],
             positionShader: shaders["frag/randoms/nice-noise/position.frag"]
           }}
@@ -65,7 +64,7 @@ class App extends Component {
           name="Random #3: Maze Automata"
           imgSrc="./frag/randoms/maze-automata/maze-automata.png"
           code={{
-            displayShader: shaders["frag/randoms/maze-automata/display.frag"],
+            displayShader: shaders["frag/display.frag"],
             velocityShader: shaders["frag/randoms/maze-automata/velocity.frag"],
             positionShader: shaders["frag/randoms/maze-automata/position.frag"]
           }}
@@ -76,7 +75,7 @@ class App extends Component {
           name="Random 4: Grid Fill"
           imgSrc="./frag/randoms/maze-fill/maze-fill.png"
           code={{
-            displayShader: shaders["frag/randoms/maze-fill/display.frag"],
+            displayShader: shaders["frag/display.frag"],
             velocityShader: shaders["frag/randoms/maze-fill/velocity.frag"],
             positionShader: shaders["frag/randoms/maze-fill/position.frag"]
           }}

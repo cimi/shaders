@@ -6,17 +6,12 @@ import "./index.css";
 import App from "./App";
 import { showFpsCounter } from "./stats";
 
-const automata = [
-  "frag/color-automata/",
-  "frag/randoms/random-lightning/",
-  "frag/randoms/nice-noise/",
-  "frag/randoms/maze-automata/",
-  "frag/randoms/maze-fill/"
-];
+const automata = ["frag/color-automata/"];
 const shaderVariants = ["velocity", "position"];
 const automataShaders = automata
   .map(path => shaderVariants.map(variant => `${path}${variant}.frag`))
   .reduce((acc, shaders) => acc.concat(shaders), []);
+
 const promises = [
   "frag/256-colors.frag",
   "frag/display.frag",

@@ -1,6 +1,12 @@
 import React from "react";
 
-import { createProgram, createShader } from "../../utils";
+import {
+  createProgram,
+  createShader,
+  createTexture,
+  randomImage,
+  blankImage
+} from "../../utils";
 
 export class ColorAutomata extends React.Component {
   constructor(props) {
@@ -10,61 +16,43 @@ export class ColorAutomata extends React.Component {
   }
 
   componentDidMount() {
-    const { code } = this.props;
-    createColorAutomata(this.canvasRef.current, code, {
-      width: 256,
-      height: 256
+    const { code, width, height } = this.props;
+    const { nextFrame } = createColorAutomata(this.canvasRef.current, code, {
+      width,
+      height
     });
+    const step = () => {
+      console.time("step");
+      nextFrame();
+      this.animationFrameReq = requestAnimationFrame(step);
+      console.timeEnd("step");
+    };
+    requestAnimationFrame(step);
+  }
+
+  componentWillUnmount() {
+    console.log("Clearing animation frame request ", this.animationFrameReq);
+    cancelAnimationFrame(this.animationFrameReq);
   }
 
   render() {
+    const { width, height } = this.props;
     return (
       <canvas
-        width="256"
-        height="256"
+        width={width}
+        height={height}
         ref={this.canvasRef}
-        style={{ width: "256px", height: "256px" }}
+        style={{ width: `${width}px`, height: `${height}px` }}
       />
     );
   }
 }
 
-const createTexture = (gl, textureUnit, image, { width, height }) => {
-  const texture = gl.createTexture();
-  gl.activeTexture(textureUnit);
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0,
-    gl.RGB,
-    width,
-    height,
-    0,
-    gl.RGB,
-    gl.UNSIGNED_BYTE,
-    image
-  );
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.generateMipmap(gl.TEXTURE_2D);
-  return texture;
+ColorAutomata.defaultProps = {
+  width: 256,
+  height: 256
 };
 
-function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-const randomImage = ({ width, height }) => {
-  let buffer = [];
-  for (let i = 0; i < width * height * 3; i++) {
-    buffer[i] = randomInt(0, 255);
-  }
-  return new Uint8Array(buffer);
-};
-const blankImage = ({ width, height }) => {
-  let buffer = new Uint8Array(3 * width * height);
-  buffer.fill(0, 0, buffer.length);
-  return buffer;
-};
 class Automata {
   constructor(gl, { width, height }) {
     this.active = 1;
@@ -97,6 +85,7 @@ class Automata {
       position: [buffers[0], buffers[1]],
       velocity: [buffers[2], buffers[3]]
     };
+    console.log(this.textures, this.buffers);
   }
 
   swap() {
@@ -155,7 +144,6 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
   const velocityProg = createProgram(gl, vertexShader, velocityFragShader);
   const positionProg = createProgram(gl, vertexShader, positionFragShader);
   const displayProg = createProgram(gl, vertexShader, displayFragShader);
-
   gl.useProgram(velocityProg);
 
   const velocityProgCoordLoc = gl.getAttribLocation(velocityProg, "coord");
@@ -164,7 +152,8 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
   const velocityUniforms = [
     gl.getUniformLocation(velocityProg, "previousPosition"),
     gl.getUniformLocation(velocityProg, "previousVelocity"),
-    gl.getUniformLocation(velocityProg, "size")
+    gl.getUniformLocation(velocityProg, "size"),
+    gl.getUniformLocation(velocityProg, "u_time")
   ];
 
   const positionUniforms = [
@@ -200,15 +189,21 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
   );
 
   const automata = new Automata(gl, { width, height });
-  window.setInterval(function() {
+  const nextFrame = function() {
+    console.time("frame");
+
+    console.time("update velocity");
     gl.bindFramebuffer(gl.FRAMEBUFFER, automata.velocityFrameBuffer());
     gl.useProgram(velocityProg);
     gl.enableVertexAttribArray(velocityProgCoordLoc);
     gl.uniform1i(velocityUniforms[0], automata.prevPositionTextureUnit());
     gl.uniform1i(velocityUniforms[1], automata.prevVelocityTextureUnit());
     gl.uniform2f(velocityUniforms[2], gl.canvas.width, gl.canvas.height);
+    gl.uniform1f(velocityUniforms[3], performance.now() / 1000);
     gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
+    console.timeEnd("update velocity");
 
+    console.time("update position");
     gl.bindFramebuffer(gl.FRAMEBUFFER, automata.positionFrameBuffer());
     gl.useProgram(positionProg);
     gl.enableVertexAttribArray(positionProgCoordLoc);
@@ -216,13 +211,19 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     gl.uniform1i(positionUniforms[1], automata.nextVelocityTextureUnit());
     gl.uniform2f(positionUniforms[2], gl.canvas.width, gl.canvas.height);
     gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
+    console.timeEnd("update position");
 
+    console.time("update display");
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.useProgram(displayProg);
+
     gl.uniform1i(displayUniforms[0], automata.nextPositionTextureUnit());
     gl.uniform2f(displayUniforms[1], gl.canvas.width, gl.canvas.height);
     gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
+    console.timeEnd("update display");
 
     automata.swap();
-  }, 30);
+    console.timeEnd("frame");
+  };
+  return { automata, nextFrame };
 };

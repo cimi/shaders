@@ -3,7 +3,7 @@ uniform sampler2D state;
 uniform vec2 size;
 
 vec4 value(sampler2D texture, vec2 coord) {
-  return texture2D(texture, coord / size);
+  return texture2D(texture, coord / float(size[0]));
 }
 
 void main(void) {

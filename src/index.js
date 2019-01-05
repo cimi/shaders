@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 
 import App from "./App";
+import { showFpsCounter } from "./stats";
 
 const automata = [
   "frag/color-automata/",
@@ -12,14 +13,13 @@ const automata = [
   "frag/randoms/maze-automata/",
   "frag/randoms/maze-fill/"
 ];
-const shaderVariants = ["display", "velocity", "position"];
+const shaderVariants = ["velocity", "position"];
 const automataShaders = automata
   .map(path => shaderVariants.map(variant => `${path}${variant}.frag`))
   .reduce((acc, shaders) => acc.concat(shaders), []);
-console.log(automataShaders);
 const promises = [
   "frag/256-colors.frag",
-  "frag/game-of-life/display.frag",
+  "frag/display.frag",
   "frag/game-of-life/game-of-life.frag"
 ]
   .concat(automataShaders)
@@ -29,8 +29,9 @@ const promises = [
       .then(responseText => ({ [frag]: responseText }))
   );
 
+showFpsCounter(true);
+
 Promise.all(promises).then(shaders => {
-  console.log(shaders);
   ReactDOM.render(
     <App shaders={Object.assign({}, ...shaders)} />,
     document.getElementById("root")

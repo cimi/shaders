@@ -2,6 +2,7 @@ precision mediump float;
 uniform sampler2D previousPosition;
 uniform sampler2D previousVelocity;
 uniform vec2 size;
+uniform float u_time;
 
 int withinBounds(vec2 coord) {
   return coord.x < size.x && coord.y < size.y ? 1 : 0;
@@ -20,6 +21,8 @@ vec4 adjustDown(vec4 velocity) {
 }
 
 vec4 value(sampler2D texture, vec2 coord) {
+  // TODO: accessing the textures in this way makes the frame rate drop to 15 fps
+  // replacing the line below with a constant yields 60 fps
   return withinBounds(coord) == 1 ? texture2D(texture, coord / size) : vec4(0.);
 }
 
@@ -87,14 +90,16 @@ vec4 separation(sampler2D texture, vec2 coord) {
 }
 
 float neighborCount(vec2 coord) {
-  return float(withinBounds(coord+vec2(-1.,-1.)) +
+  return float(
+    withinBounds(coord+vec2(-1.,-1.)) +
     withinBounds(coord+vec2(-1.,0.)) +
     withinBounds(coord+vec2(-1.,1.)) +
     withinBounds(coord+vec2(0.,-1.)) +
     withinBounds(coord+vec2(0.,1.)) +
     withinBounds(coord+vec2(1.,-1.)) +
     withinBounds(coord+vec2(1.,0.)) +
-    withinBounds(coord+vec2(1.,1.)));
+    withinBounds(coord+vec2(1.,1.))
+  );
 }
 
 vec4 neighborAverage(sampler2D texture, vec2 coord) {
@@ -105,6 +110,10 @@ vec4 neighborVelocityAverage(vec2 coord) {
   return sumAllVelocities(coord) / neighborCount(coord);
 }
 
+float random (vec2 st) {
+    return fract(sin(dot(st.xy, vec2(0.330,0.120))) * 43758.5453123);
+}
+
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
 
@@ -113,5 +122,6 @@ void main(void) {
   vec4 separation = separation(previousPosition, coord);
 
   vec4 nextVelocity = separation * (avgVelocity - velocity(coord)) + (avgPosition - position(coord));
+  // gl_FragColor = vec4(vec3(random(coord * sin(u_time))), 1.);
   gl_FragColor = adjustUp(0.33 * nextVelocity);
 }

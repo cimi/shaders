@@ -57,18 +57,6 @@ ivec3 position(vec2 coord) {
   return value(previousPosition, coord);
 }
 
-int isOnEdge(int v) {
-  return v >= 250 || v <= 5 ? -1 : 1;
-}
-
-ivec3 invertVelocity(ivec3 position, ivec3 previousVelocity) {
-  ivec3 velocity = ivec3(0);
-  velocity.x = isOnEdge(position.x + previousVelocity.x) * previousVelocity.x;
-  velocity.y = isOnEdge(position.y + previousVelocity.y) * previousVelocity.y;
-  velocity.z = isOnEdge(position.z + previousVelocity.z) * previousVelocity.z;
-  return velocity;
-}
-
 ivec3 velocity(vec2 coord) {
   if (withinBounds(coord) == 0) {
     return ivec3(0);
@@ -155,5 +143,5 @@ void main(void) {
 
   // TODO: inverting the velocity should be done after computing the final position
   // so that it actually touches the edges
-  gl_FragColor = .33 * toFloats(invertVelocity(position(coord), nextVelocity));
+  gl_FragColor = .33 * toFloatsNeg(nextVelocity);
 }

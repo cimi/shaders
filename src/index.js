@@ -7,7 +7,7 @@ import App from "./App";
 import { showFpsCounter } from "./stats";
 
 const automata = ["frag/color-automata/"];
-const shaderVariants = ["velocity", "position"];
+const shaderVariants = ["velocity", "position", "invert-velocity"];
 const automataShaders = automata
   .map(path => shaderVariants.map(variant => `${path}${variant}.frag`))
   .reduce((acc, shaders) => acc.concat(shaders), []);

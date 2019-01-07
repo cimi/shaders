@@ -54,7 +54,7 @@ ivec3 valueNeg(sampler2D texture, vec2 coord) {
 }
 
 int isOnEdge(int v) {
-  return v >= 250 || v <= 5 ? -1 : 1;
+  return v >= 200 || v <= 55 ? -1 : 1;
 }
 
 ivec3 invertVelocity(ivec3 position, ivec3 velocity) {

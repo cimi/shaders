@@ -152,8 +152,6 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     code.invertVelocityShader
   );
 
-  console.log(code);
-
   const velocityProg = createProgram(gl, vertexShader, velocityFragShader);
   const positionProg = createProgram(gl, vertexShader, positionFragShader);
   const invertVelocityProg = createProgram(

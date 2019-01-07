@@ -86,15 +86,24 @@ ivec3 sumAllVelocities(vec2 coord) {
     velocity(coord+vec2(1.,1.));
 }
 
+float ivec3Length(ivec3 v) {
+  return sqrt(float(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]));
+}
+
+vec3 ivec3Normalize(ivec3 v) {
+  float len = ivec3Length(v);
+  return vec3(float(v[0]) / len, float(v[1]) / len, float(v[2]) / len);
+}
+
 ivec3 diff(sampler2D texture, vec2 firstCoords, vec2 secondCoords) {
   if (withinBounds(secondCoords) == 0) {
     return ivec3(255);
   }
   ivec3 d = value(texture, firstCoords) - value(texture, secondCoords);
-  return sqrt(float(d[0] * d[0] + d[1] * d[1] + d[2] * d[2])) < 64.0 ? d : ivec3(0);
+  return ivec3Length(d) < 64.0 ? d : ivec3(0);
 }
 
-ivec3 separation(sampler2D texture, vec2 coord) {
+vec4 separation(sampler2D texture, vec2 coord) {
   ivec3 separation = diff(texture, coord, coord+vec2(-1.,-1.)) +
     diff(texture, coord, coord+vec2(-1.,0.)) +
     diff(texture, coord, coord+vec2(-1.,1.)) +
@@ -103,8 +112,7 @@ ivec3 separation(sampler2D texture, vec2 coord) {
     diff(texture, coord, coord+vec2(1.,-1.)) +
     diff(texture, coord, coord+vec2(1.,0.)) +
     diff(texture, coord, coord+vec2(1.,1.));
-  // normalize separation vector
-  return toInts(normalize(toFloats(separation)) * 4.);
+  return vec4(ivec3Normalize(separation), 1.);
 }
 
 int neighborCount(vec2 coord) {
@@ -126,22 +134,13 @@ ivec3 neighborVelocityAverage(vec2 coord) {
   return sumAllVelocities(coord) / neighborCount(coord);
 }
 
-// float random (vec2 st) {
-//     return fract(sin(dot(st.xy, vec2(0.330,0.120))) * 43758.5453123);
-// }
-
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
 
   ivec3 avgVelocity = neighborVelocityAverage(coord);
   ivec3 avgPosition = neighborPositionAverage(coord);
-  ivec3 separation = separation(previousPosition, coord);
+  ivec3 nextVelocity = (avgVelocity - velocity(coord)) + (avgPosition - position(coord));
 
-  ivec3 nextVelocity = separation * (avgVelocity - velocity(coord)) + (avgPosition - position(coord));
-
-  // gl_FragColor = vec4(vec3(random(coord * sin(u_time))), 1.);
-
-  // TODO: inverting the velocity should be done after computing the final position
-  // so that it actually touches the edges
-  gl_FragColor = .33 * toFloatsNeg(nextVelocity);
+  vec4 sep = separation(previousPosition, coord);
+  gl_FragColor = .33 * (sep + toFloatsNeg(nextVelocity));
 }

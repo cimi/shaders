@@ -22,16 +22,16 @@ export class ColorAutomata extends React.Component {
       height
     });
     const step = () => {
-      console.time("step");
+      // console.time("step");
       nextFrame();
       this.animationFrameReq = requestAnimationFrame(step);
-      console.timeEnd("step");
+      // console.timeEnd("step");
     };
     requestAnimationFrame(step);
   }
 
   componentWillUnmount() {
-    console.log("Clearing animation frame request ", this.animationFrameReq);
+    // console.log("Clearing animation frame request ", this.animationFrameReq);
     cancelAnimationFrame(this.animationFrameReq);
   }
 
@@ -85,7 +85,7 @@ class Automata {
       position: [buffers[0], buffers[1]],
       velocity: [buffers[2], buffers[3]]
     };
-    console.log(this.textures, this.buffers);
+    // console.log(this.textures, this.buffers);
   }
 
   swap() {
@@ -190,9 +190,9 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
 
   const automata = new Automata(gl, { width, height });
   const nextFrame = function() {
-    console.time("frame");
+    // console.time("frame");
 
-    console.time("update velocity");
+    // console.time("update velocity");
     gl.bindFramebuffer(gl.FRAMEBUFFER, automata.velocityFrameBuffer());
     gl.useProgram(velocityProg);
     gl.enableVertexAttribArray(velocityProgCoordLoc);
@@ -201,9 +201,9 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     gl.uniform2f(velocityUniforms[2], gl.canvas.width, gl.canvas.height);
     gl.uniform1f(velocityUniforms[3], performance.now() / 1000);
     gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-    console.timeEnd("update velocity");
+    // console.timeEnd("update velocity");
 
-    console.time("update position");
+    // console.time("update position");
     gl.bindFramebuffer(gl.FRAMEBUFFER, automata.positionFrameBuffer());
     gl.useProgram(positionProg);
     gl.enableVertexAttribArray(positionProgCoordLoc);
@@ -211,19 +211,19 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     gl.uniform1i(positionUniforms[1], automata.nextVelocityTextureUnit());
     gl.uniform2f(positionUniforms[2], gl.canvas.width, gl.canvas.height);
     gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-    console.timeEnd("update position");
+    // console.timeEnd("update position");
 
-    console.time("update display");
+    // console.time("update display");
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.useProgram(displayProg);
 
     gl.uniform1i(displayUniforms[0], automata.nextPositionTextureUnit());
     gl.uniform2f(displayUniforms[1], gl.canvas.width, gl.canvas.height);
     gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-    console.timeEnd("update display");
+    // console.timeEnd("update display");
 
     automata.swap();
-    console.timeEnd("frame");
+    // console.timeEnd("frame");
   };
   return { automata, nextFrame };
 };

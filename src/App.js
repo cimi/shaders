@@ -33,7 +33,9 @@ class App extends Component {
             positionShader: shaders["frag/color-automata/position.frag"]
           }}
           preview={props => <ColorAutomata {...props} />}
-          full={() => null}
+          full={props => (
+            <ColorAutomata {...props} width="1024" height="1024" />
+          )}
         />
       </div>
     );

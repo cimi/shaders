@@ -2,7 +2,7 @@ precision mediump float;
 uniform sampler2D previousPosition;
 uniform sampler2D previousVelocity;
 uniform vec2 size;
-uniform float u_time;
+uniform float time;
 
 // include utils.frag
 

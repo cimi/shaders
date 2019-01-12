@@ -1,4 +1,5 @@
 import React from "react";
+import _ from "lodash";
 
 import {
   createProgram,
@@ -56,8 +57,7 @@ ColorAutomata.defaultProps = {
 class Automata {
   constructor(gl, { width, height }) {
     this.active = 1;
-    const textures = [];
-    const buffers = [];
+    this.frameBuffers = [];
     const seed = randomImage({ width, height });
     for (let idx = 0; idx < 6; idx++) {
       const image = idx < 1 ? seed : blankImage({ width, height });
@@ -74,144 +74,48 @@ class Automata {
         texture,
         0
       );
-      textures.push(texture);
-      buffers.push(buffer);
+      this.frameBuffers.push({ textureUnit: idx, frameBuffer: buffer });
     }
-    this.textures = {
-      position: textures.slice(0, 2),
-      velocity: textures.slice(2)
-    };
-    this.buffers = {
-      position: [buffers[0], buffers[1]],
-      velocity: [buffers[2], buffers[3]]
-    };
-    // console.log(this.textures, this.buffers);
   }
 
   swap() {
     this.active = 1 - this.active;
   }
 
-  nextVelocityTextureUnit() {
-    // return this.active === 1 ? 3 : 2;
-    return 3;
+  textureUnit(id) {
+    switch (id) {
+      case "prevPosition":
+        return this.active ? 0 : 1;
+      case "prevVelocity":
+        return 2;
+      case "nextPosition":
+        return this.active ? 1 : 0;
+      case "nextVelocity":
+        return 3;
+      default:
+        throw new Error("id not recognized");
+    }
   }
 
-  nextPositionTextureUnit() {
-    return this.active === 1 ? 1 : 0;
-  }
-
-  prevVelocityTextureUnit() {
-    // return this.active === 1 ? 2 : 3;
-    return 2;
-  }
-
-  prevPositionTextureUnit() {
-    return this.active === 1 ? 0 : 1;
-  }
-
-  nextVelocityFrameBuffer() {
-    return this.buffers.velocity[1];
-  }
-
-  prevVelocityFrameBuffer() {
-    return this.buffers.velocity[0];
-  }
-
-  positionFrameBuffer() {
-    return this.buffers.position[this.active];
+  frameBuffer(id) {
+    return this.frameBuffers[this.textureUnit(id)].frameBuffer;
   }
 }
 
-const createColorAutomata = (canvasEl, code, { width, height }) => {
-  const gl = canvasEl.getContext("webgl");
-
-  const vertexShader = createShader(
+const createVertexShader = gl => {
+  return createShader(
     gl,
     gl.VERTEX_SHADER,
     "attribute vec2 coord; void main(void) { gl_Position = vec4(coord, 0.0, 1.0); }"
   );
-  const displayFragShader = createShader(
-    gl,
-    gl.FRAGMENT_SHADER,
-    code.displayShader
-  );
-  const velocityFragShader = createShader(
-    gl,
-    gl.FRAGMENT_SHADER,
-    code.velocityShader
-  );
-  const positionFragShader = createShader(
-    gl,
-    gl.FRAGMENT_SHADER,
-    code.positionShader
-  );
-  const invertVelocityFragShader = createShader(
-    gl,
-    gl.FRAGMENT_SHADER,
-    code.invertVelocityShader
-  );
+};
 
-  const neighborAverageFragShader = createShader(
-    gl,
-    gl.FRAGMENT_SHADER,
-    code.neighborAverageShader
-  );
-
-  const velocityProg = createProgram(gl, vertexShader, velocityFragShader);
-  const positionProg = createProgram(gl, vertexShader, positionFragShader);
-  const invertVelocityProg = createProgram(
-    gl,
-    vertexShader,
-    invertVelocityFragShader
-  );
-  const neighborAverageProg = createProgram(
-    gl,
-    vertexShader,
-    neighborAverageFragShader
-  );
-  const displayProg = createProgram(gl, vertexShader, displayFragShader);
-  // gl.useProgram(velocityProg);
-
-  const velocityProgCoordLoc = gl.getAttribLocation(velocityProg, "coord");
-  const positionProgCoordLoc = gl.getAttribLocation(positionProg, "coord");
-  const invertVelocityProgCoordLoc = gl.getAttribLocation(
-    invertVelocityProg,
-    "coord"
-  );
-  const neighborAverageProgCoordLoc = gl.getAttribLocation(
-    neighborAverageProg,
-    "coord"
-  );
-
-  const velocityUniforms = [
-    gl.getUniformLocation(velocityProg, "previousPosition"),
-    gl.getUniformLocation(velocityProg, "previousVelocity"),
-    gl.getUniformLocation(velocityProg, "size"),
-    gl.getUniformLocation(velocityProg, "u_time")
-  ];
-
-  const positionUniforms = [
-    gl.getUniformLocation(positionProg, "previousPosition"),
-    gl.getUniformLocation(positionProg, "currentVelocity"),
-    gl.getUniformLocation(positionProg, "size")
-  ];
-
-  const invertVelocityUniforms = [
-    gl.getUniformLocation(invertVelocityProg, "positionTex"),
-    gl.getUniformLocation(invertVelocityProg, "velocityTex"),
-    gl.getUniformLocation(invertVelocityProg, "size")
-  ];
-
-  const neighborAverageUniforms = [
-    gl.getUniformLocation(neighborAverageProg, "tex"),
-    gl.getUniformLocation(neighborAverageProg, "size")
-  ];
-
-  const displayUniforms = [
-    gl.getUniformLocation(displayProg, "state"),
-    gl.getUniformLocation(displayProg, "size")
-  ];
+const gpgpu = (gl, options) => {
+  const { shaderCode, uniformDefinitions } = options;
+  const vertexShader = createVertexShader(gl);
+  const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, shaderCode);
+  const program = createProgram(gl, vertexShader, fragmentShader);
+  const coordLoc = gl.getAttribLocation(program, "coord");
 
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -224,7 +128,7 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
   // Note we must bind ARRAY_BUFFER before running vertexAttribPointer!
   // This is confusing and deserves a blog post
   // https://stackoverflow.com/questions/7617668/glvertexattribpointer-needed-everytime-glbindbuffer-is-called
-  gl.vertexAttribPointer(velocityProgCoordLoc, 2, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribPointer(coordLoc, 2, gl.FLOAT, false, 0, 0);
 
   const elementBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
@@ -234,62 +138,96 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     gl.STATIC_DRAW
   );
 
+  const mappedUniforms = _.mapValues(uniformDefinitions, (props, name) =>
+    Object.assign(props, { loc: gl.getUniformLocation(program, name) })
+  );
+
+  return (frameBuffer, uniforms) => {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+    gl.useProgram(program);
+    gl.enableVertexAttribArray(coordLoc);
+    _.forOwn(mappedUniforms, (props, name) => {
+      gl[props.type](props.loc, ...uniforms[name]);
+    });
+    gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
+  };
+};
+
+const createColorAutomata = (canvasEl, code, { width, height }) => {
+  const gl = canvasEl.getContext("webgl");
+
+  const updateVelocity = gpgpu(gl, {
+    shaderCode: code.velocityShader,
+    uniformDefinitions: {
+      previousPosition: { type: "uniform1i" },
+      previousVelocity: { type: "uniform1i" },
+      size: { type: "uniform2f" },
+      time: { type: "uniform1f" }
+    }
+  });
+
+  const updatePosition = gpgpu(gl, {
+    shaderCode: code.positionShader,
+    uniformDefinitions: {
+      previousPosition: { type: "uniform1i" },
+      currentVelocity: { type: "uniform1i" },
+      size: { type: "uniform2f" }
+    }
+  });
+
+  const invertVelocity = gpgpu(gl, {
+    shaderCode: code.invertVelocityShader,
+    uniformDefinitions: {
+      positionTex: { type: "uniform1i" },
+      velocityTex: { type: "uniform1i" },
+      size: { type: "uniform2f" }
+    }
+  });
+
+  const neighborAverage = gpgpu(gl, {
+    shaderCode: code.neighborAverageShader,
+    uniformDefinitions: {
+      tex: { type: "uniform1i" },
+      size: { type: "uniform2f" }
+    }
+  });
+
+  const display = gpgpu(gl, {
+    shaderCode: code.displayShader,
+    uniformDefinitions: {
+      state: { type: "uniform1i" },
+      size: { type: "uniform2f" }
+    }
+  });
+
   const automata = new Automata(gl, { width, height });
   const nextFrame = function() {
-    // console.time("frame");
+    updateVelocity(automata.frameBuffer("nextVelocity"), {
+      previousPosition: [automata.textureUnit("prevPosition")],
+      previousVelocity: [automata.textureUnit("prevVelocity")],
+      size: [gl.canvas.width, gl.canvas.height],
+      time: [performance.now() / 1000]
+    });
 
-    // console.time("update velocity");
-    gl.bindFramebuffer(gl.FRAMEBUFFER, automata.nextVelocityFrameBuffer());
-    gl.useProgram(velocityProg);
-    gl.enableVertexAttribArray(velocityProgCoordLoc);
-    gl.uniform1i(velocityUniforms[0], automata.prevPositionTextureUnit());
-    gl.uniform1i(velocityUniforms[1], automata.prevVelocityTextureUnit());
-    gl.uniform2f(velocityUniforms[2], gl.canvas.width, gl.canvas.height);
-    gl.uniform1f(velocityUniforms[3], performance.now() / 1000);
-    gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-    // console.timeEnd("update velocity");
+    updatePosition(automata.frameBuffer("nextPosition"), {
+      previousPosition: [automata.textureUnit("prevPosition")],
+      currentVelocity: [automata.textureUnit("nextVelocity")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
 
-    // console.time("update position");
-    gl.bindFramebuffer(gl.FRAMEBUFFER, automata.positionFrameBuffer());
-    gl.useProgram(positionProg);
-    gl.enableVertexAttribArray(positionProgCoordLoc);
-    gl.uniform1i(positionUniforms[0], automata.prevPositionTextureUnit());
-    gl.uniform1i(positionUniforms[1], automata.nextVelocityTextureUnit());
-    gl.uniform2f(positionUniforms[2], gl.canvas.width, gl.canvas.height);
-    gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-    // console.timeEnd("update position");
+    invertVelocity(automata.frameBuffer("prevVelocity"), {
+      positionTex: [automata.textureUnit("nextPosition")],
+      velocityTex: [automata.textureUnit("nextVelocity")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
 
-    // update the velocity buffer again to invert it if the particle touches a cube edge
-    gl.bindFramebuffer(gl.FRAMEBUFFER, automata.prevVelocityFrameBuffer());
-    gl.useProgram(invertVelocityProg);
-    gl.enableVertexAttribArray(invertVelocityProgCoordLoc);
-    gl.uniform1i(invertVelocityUniforms[0], automata.nextVelocityTextureUnit());
-    gl.uniform1i(invertVelocityUniforms[1], automata.nextPositionTextureUnit());
-    gl.uniform2f(invertVelocityUniforms[2], gl.canvas.width, gl.canvas.height);
-    gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-
-    // compute neighbor average to the screen
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.useProgram(neighborAverageProg);
-    gl.enableVertexAttribArray(neighborAverageProgCoordLoc);
-    gl.uniform1i(
-      neighborAverageUniforms[0],
-      automata.nextVelocityTextureUnit()
-    );
-    gl.uniform2f(neighborAverageUniforms[1], gl.canvas.width, gl.canvas.height);
-    gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-
-    // console.time("update display");
-    // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    // gl.useProgram(displayProg);
-
-    // gl.uniform1i(displayUniforms[0], automata.nextPositionTextureUnit());
-    // gl.uniform2f(displayUniforms[1], gl.canvas.width, gl.canvas.height);
-    // gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
-    // console.timeEnd("update display");
-
+    display(null, {
+      state: [automata.textureUnit("nextPosition")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
     automata.swap();
-    // console.timeEnd("frame");
+
+    // display(null, { });
   };
   return { automata, nextFrame };
 };

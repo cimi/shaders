@@ -59,7 +59,7 @@ class Automata {
     this.active = 1;
     this.frameBuffers = [];
     const seed = randomImage({ width, height });
-    for (let idx = 0; idx < 6; idx++) {
+    for (let idx = 0; idx < 7; idx++) {
       const image = idx < 1 ? seed : blankImage({ width, height });
       const texture = createTexture(gl, gl[`TEXTURE${idx}`], image, {
         width,
@@ -92,6 +92,12 @@ class Automata {
         return this.active ? 1 : 0;
       case "nextVelocity":
         return 3;
+      case "positionAverage":
+        return 4;
+      case "velocityAverage":
+        return 5;
+      case "separation":
+        return 6;
       default:
         throw new Error("id not recognized");
     }
@@ -159,8 +165,9 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
   const updateVelocity = gpgpu(gl, {
     shaderCode: code.velocityShader,
     uniformDefinitions: {
-      previousPosition: { type: "uniform1i" },
-      previousVelocity: { type: "uniform1i" },
+      velocityAverage: { type: "uniform1i" },
+      positionAverage: { type: "uniform1i" },
+      separation: { type: "uniform1i" },
       size: { type: "uniform2f" },
       time: { type: "uniform1f" }
     }
@@ -192,19 +199,43 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     }
   });
 
+  const separation = gpgpu(gl, {
+    shaderCode: code.separationShader,
+    uniformDefinitions: {
+      tex: { type: "uniform1i" },
+      size: { type: "uniform2f" }
+    }
+  });
+
   const display = gpgpu(gl, {
     shaderCode: code.displayShader,
     uniformDefinitions: {
-      state: { type: "uniform1i" },
+      tex: { type: "uniform1i" },
       size: { type: "uniform2f" }
     }
   });
 
   const automata = new Automata(gl, { width, height });
   const nextFrame = function() {
+    neighborAverage(automata.frameBuffer("positionAverage"), {
+      tex: [automata.textureUnit("prevPosition")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
+
+    neighborAverage(automata.frameBuffer("velocityAverage"), {
+      tex: [automata.textureUnit("prevVelocity")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
+
+    separation(automata.frameBuffer("separation"), {
+      tex: [automata.textureUnit("prevPosition")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
+
     updateVelocity(automata.frameBuffer("nextVelocity"), {
-      previousPosition: [automata.textureUnit("prevPosition")],
-      previousVelocity: [automata.textureUnit("prevVelocity")],
+      velocityAverage: [automata.textureUnit("velocityAverage")],
+      positionAverage: [automata.textureUnit("positionAverage")],
+      separation: [automata.textureUnit("separation")],
       size: [gl.canvas.width, gl.canvas.height],
       time: [performance.now() / 1000]
     });
@@ -222,7 +253,7 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     });
 
     display(null, {
-      state: [automata.textureUnit("nextPosition")],
+      tex: [automata.textureUnit("nextVelocity")],
       size: [gl.canvas.width, gl.canvas.height]
     });
     automata.swap();

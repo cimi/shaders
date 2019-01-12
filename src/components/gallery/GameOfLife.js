@@ -84,7 +84,7 @@ const createGameOfLife = (canvasEl, code, startStateImg) => {
     "previousState"
   );
 
-  const displayProgStateLoc = gl.getUniformLocation(displayProg, "state");
+  const displayProgStateLoc = gl.getUniformLocation(displayProg, "tex");
   const displayProgSizeLoc = gl.getUniformLocation(displayProg, "size");
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);

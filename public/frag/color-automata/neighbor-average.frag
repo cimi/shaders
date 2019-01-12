@@ -8,11 +8,12 @@ vec2 pos(vec2 coord, int offsetX, int offsetY) {
   return coord + vec2(float(offsetX), float(offsetY));
 }
 
-ivec3 v(vec2 coord, int offsetX, int offsetY) {
-  return value(tex, pos(coord, offsetX, offsetY));
+vec3 v(vec2 coord, int offsetX, int offsetY) {
+  return vec3(texture2D(tex, pos(coord, offsetX, offsetY) / size));
+  // return value(tex, pos(coord, offsetX, offsetY));
 }
 
-ivec3 sumNeighbors(vec2 coord) {
+vec3 sumNeighbors(vec2 coord) {
   return v(coord, -1, -1) +
     v(coord, -1, 0) +
     v(coord, -1, 1) +
@@ -37,5 +38,7 @@ int neighborCount(vec2 coord) {
 
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
-  gl_FragColor = toFloats(sumNeighbors(coord) / neighborCount(coord));
+  vec3 average = sumNeighbors(coord) / float(neighborCount(coord));
+  vec3 d = average - v(coord, 0, 0);
+  gl_FragColor = vec4(d, 1.);
 }

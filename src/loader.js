@@ -4,6 +4,7 @@ const shaderVariants = [
   "position",
   "invert-velocity",
   "neighbor-average",
+  "separation",
   "utils"
 ];
 const automataShaders = automata

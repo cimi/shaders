@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { GalleryItem } from "./components/GalleryItem";
 import { GameOfLife } from "./components/gallery/GameOfLife";
 import { ColorAutomata } from "./components/gallery/ColorAutomata";
-import { MazeFill } from "./components/gallery/randoms/MazeFill";
 
 class App extends Component {
   render() {
@@ -30,10 +29,17 @@ class App extends Component {
           code={{
             displayShader: shaders["frag/display.frag"],
             velocityShader: shaders["frag/color-automata/velocity.frag"],
-            positionShader: shaders["frag/color-automata/position.frag"]
+            positionShader: shaders["frag/color-automata/position.frag"],
+            invertVelocityShader:
+              shaders["frag/color-automata/invert-velocity.frag"],
+            neighborAverageShader:
+              shaders["frag/color-automata/neighbor-average.frag"],
+            separationShader: shaders["frag/color-automata/separation.frag"]
           }}
           preview={props => <ColorAutomata {...props} />}
-          full={() => null}
+          full={props => (
+            <ColorAutomata {...props} width="1024" height="1024" />
+          )}
         />
       </div>
     );

@@ -17,6 +17,6 @@ void main(void) {
   ivec3 sep = value(separation, coord);
 
   float ease = .33;
-  ivec3 nextVelocity = avgVelocity + avgPosition;
-  gl_FragColor = ease * toFloats(sep) + toFloatsNeg(nextVelocity / 1000);
+  // ivec3 nextVelocity = ;
+  gl_FragColor = ease * toFloats(sep) + toFloatsNeg(avgVelocity / 2) + toFloats(avgPosition);
 }

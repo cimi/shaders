@@ -14,29 +14,28 @@ vec3 ivec3Normalize(ivec3 v) {
   return vec3(float(v[0]) / len, float(v[1]) / len, float(v[2]) / len);
 }
 
-ivec3 diff(sampler2D texture, vec2 firstCoords, vec2 secondCoords) {
-  if (withinBounds(secondCoords) == 0) {
+ivec3 diff(vec2 coords, float offsetX, float offsetY) {
+  vec2 otherCoords = vec2(coords + vec2(offsetX, offsetY));
+  if (withinBounds(otherCoords) == 0) {
     return ivec3(0);
   }
-  ivec3 d = value(texture, firstCoords) - value(texture, secondCoords);
+  ivec3 d = value(previousPosition, coords) - value(previousPosition, otherCoords);
   return ivec3Length(d) < 64.0 ? d : ivec3(0);
 }
 
-vec4 separation(sampler2D texture, vec2 coord) {
-  ivec3 separation = diff(texture, coord, coord+vec2(-1.,-1.)) +
-    diff(texture, coord, coord+vec2(-1.,0.)) +
-    diff(texture, coord, coord+vec2(-1.,1.)) +
-    diff(texture, coord, coord+vec2(0.,-1.)) +
-    diff(texture, coord, coord+vec2(0.,1.)) +
-    diff(texture, coord, coord+vec2(1.,-1.)) +
-    diff(texture, coord, coord+vec2(1.,0.)) +
-    diff(texture, coord, coord+vec2(1.,1.));
-  // TODO: fix separation computation
+vec4 separation(vec2 coord) {
+  ivec3 separation = diff(coord, -1., -1.) +
+    diff(coord, -1., 0.) +
+    diff(coord, -1., 1.) +
+    diff(coord, 0., -1.) +
+    diff(coord, 0., 1.) +
+    diff(coord, 1., -1.) +
+    diff(coord, 1., 0.) +
+    diff(coord, 1., 1.);
   return vec4(4. * ivec3Normalize(separation), 1.);
-  // return normalize(toFloats(separation)) * 4.;
 }
 
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
-  gl_FragColor = separation(previousPosition, coord);
+  gl_FragColor = separation(coord);
 }

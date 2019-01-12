@@ -7,9 +7,10 @@ uniform vec2 size;
 
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
+
   ivec3 velocity = valueNeg(currentVelocity, coord);
   ivec3 position = value(previousPosition, coord);
-  // ivec3 nextPosition = ivec3(255, 0, 128);
+
   ivec3 nextPosition = velocity + position;
   gl_FragColor = toFloats(nextPosition);
 }

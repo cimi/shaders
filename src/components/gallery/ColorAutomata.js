@@ -253,7 +253,7 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     });
 
     display(null, {
-      tex: [automata.textureUnit("nextVelocity")],
+      tex: [automata.textureUnit("nextPosition")],
       size: [gl.canvas.width, gl.canvas.height]
     });
     automata.swap();

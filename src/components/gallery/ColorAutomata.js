@@ -152,6 +152,12 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     code.invertVelocityShader
   );
 
+  const neighborAverageFragShader = createShader(
+    gl,
+    gl.FRAGMENT_SHADER,
+    code.neighborAverageShader
+  );
+
   const velocityProg = createProgram(gl, vertexShader, velocityFragShader);
   const positionProg = createProgram(gl, vertexShader, positionFragShader);
   const invertVelocityProg = createProgram(
@@ -159,13 +165,22 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     vertexShader,
     invertVelocityFragShader
   );
+  const neighborAverageProg = createProgram(
+    gl,
+    vertexShader,
+    neighborAverageFragShader
+  );
   const displayProg = createProgram(gl, vertexShader, displayFragShader);
-  gl.useProgram(velocityProg);
+  // gl.useProgram(velocityProg);
 
   const velocityProgCoordLoc = gl.getAttribLocation(velocityProg, "coord");
   const positionProgCoordLoc = gl.getAttribLocation(positionProg, "coord");
   const invertVelocityProgCoordLoc = gl.getAttribLocation(
     invertVelocityProg,
+    "coord"
+  );
+  const neighborAverageProgCoordLoc = gl.getAttribLocation(
+    neighborAverageProg,
     "coord"
   );
 
@@ -186,6 +201,11 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     gl.getUniformLocation(invertVelocityProg, "positionTex"),
     gl.getUniformLocation(invertVelocityProg, "velocityTex"),
     gl.getUniformLocation(invertVelocityProg, "size")
+  ];
+
+  const neighborAverageUniforms = [
+    gl.getUniformLocation(neighborAverageProg, "tex"),
+    gl.getUniformLocation(neighborAverageProg, "size")
   ];
 
   const displayUniforms = [
@@ -248,13 +268,24 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     gl.uniform2f(invertVelocityUniforms[2], gl.canvas.width, gl.canvas.height);
     gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
 
-    // console.time("update display");
+    // compute neighbor average to the screen
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.useProgram(displayProg);
-
-    gl.uniform1i(displayUniforms[0], automata.nextPositionTextureUnit());
-    gl.uniform2f(displayUniforms[1], gl.canvas.width, gl.canvas.height);
+    gl.useProgram(neighborAverageProg);
+    gl.enableVertexAttribArray(neighborAverageProgCoordLoc);
+    gl.uniform1i(
+      neighborAverageUniforms[0],
+      automata.nextVelocityTextureUnit()
+    );
+    gl.uniform2f(neighborAverageUniforms[1], gl.canvas.width, gl.canvas.height);
     gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
+
+    // console.time("update display");
+    // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    // gl.useProgram(displayProg);
+
+    // gl.uniform1i(displayUniforms[0], automata.nextPositionTextureUnit());
+    // gl.uniform2f(displayUniforms[1], gl.canvas.width, gl.canvas.height);
+    // gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
     // console.timeEnd("update display");
 
     automata.swap();

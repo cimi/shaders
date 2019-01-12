@@ -31,7 +31,9 @@ class App extends Component {
             velocityShader: shaders["frag/color-automata/velocity.frag"],
             positionShader: shaders["frag/color-automata/position.frag"],
             invertVelocityShader:
-              shaders["frag/color-automata/invert-velocity.frag"]
+              shaders["frag/color-automata/invert-velocity.frag"],
+            neighborAverageShader:
+              shaders["frag/color-automata/neighbor-average.frag"]
           }}
           preview={props => <ColorAutomata {...props} />}
           full={props => (

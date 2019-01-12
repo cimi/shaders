@@ -1,5 +1,11 @@
 const automata = ["frag/color-automata/"];
-const shaderVariants = ["velocity", "position", "invert-velocity", "utils"];
+const shaderVariants = [
+  "velocity",
+  "position",
+  "invert-velocity",
+  "neighbor-average",
+  "utils"
+];
 const automataShaders = automata
   .map(path => shaderVariants.map(variant => `${path}${variant}.frag`))
   .reduce((acc, shaders) => acc.concat(shaders), []);
@@ -22,8 +28,6 @@ export const loadShaders = function loadShaders() {
     .then(shaders => {
       const utils = shaders["frag/color-automata/utils.frag"];
       Object.keys(shaders).forEach(name => {
-        console.log(shaders);
-        console.log(shaders[name]);
         shaders[name] = shaders[name].replace("// include utils.frag", utils);
       });
       return shaders;

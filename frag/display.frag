@@ -1,5 +1,5 @@
 precision mediump float;
-uniform sampler2D state;
+uniform sampler2D tex;
 uniform vec2 size;
 
 vec4 value(sampler2D texture, vec2 coord) {
@@ -8,5 +8,5 @@ vec4 value(sampler2D texture, vec2 coord) {
 
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
-  gl_FragColor = value(state, coord);
+  gl_FragColor = value(tex, coord);
 }

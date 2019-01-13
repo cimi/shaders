@@ -1,7 +1,8 @@
-precision mediump float;
+precision highp float;
 
-uniform sampler2D positionAverage;
-uniform sampler2D velocityAverage;
+uniform sampler2D previousVelocity;
+uniform sampler2D cohesion;
+uniform sampler2D alignment;
 uniform sampler2D separation;
 
 uniform vec2 size;
@@ -12,11 +13,11 @@ uniform float time;
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
 
-  ivec3 avgVelocity = valueNeg(velocityAverage, coord);
-  ivec3 avgPosition = value(positionAverage, coord);
-  ivec3 sep = value(separation, coord);
+  vec3 alignmentValue = valueScaled(alignment, coord);
+  vec3 cohesionValue = value(cohesion, coord);
+  vec3 separationValue = value(separation, coord);
+  vec3 original = valueScaled(previousVelocity, coord);
 
-  float ease = .33;
-  // ivec3 nextVelocity = ;
-  gl_FragColor = ease * toFloats(sep) + toFloatsNeg(avgVelocity / 2) + toFloats(avgPosition);
+  vec3 nextVelocity = original + .33 * (4. * separationValue + cohesionValue + alignmentValue / 10.);
+  gl_FragColor = vec4(scale(nextVelocity), 1.);
 }

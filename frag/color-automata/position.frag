@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 uniform sampler2D previousPosition;
 uniform sampler2D currentVelocity;
 uniform vec2 size;
@@ -8,9 +8,9 @@ uniform vec2 size;
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
 
-  ivec3 velocity = valueNeg(currentVelocity, coord);
-  ivec3 position = value(previousPosition, coord);
+  vec3 velocity = valueScaled(currentVelocity, coord);
+  vec3 position = value(previousPosition, coord);
 
-  ivec3 nextPosition = velocity + position;
-  gl_FragColor = toFloats(nextPosition);
+  vec3 nextPosition = velocity + position;
+  gl_FragColor = vec4(nextPosition, 1.);
 }

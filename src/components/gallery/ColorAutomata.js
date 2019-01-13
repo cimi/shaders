@@ -17,11 +17,12 @@ export class ColorAutomata extends React.Component {
   }
 
   componentDidMount() {
-    const { code, width, height } = this.props;
-    const { nextFrame } = createColorAutomata(this.canvasRef.current, code, {
-      width,
-      height
-    });
+    const { code } = this.props;
+    const { nextFrame } = createColorAutomata(
+      this.canvasRef.current,
+      code,
+      this.props
+    );
     const step = () => {
       // console.time("step");
       nextFrame();
@@ -51,7 +52,15 @@ export class ColorAutomata extends React.Component {
 
 ColorAutomata.defaultProps = {
   width: 256,
-  height: 256
+  height: 256,
+  velocityEase: 0.33,
+  invertBounce: 0.66,
+  cohesionWeight: 1,
+  alignmentWeight: 1 / 10,
+  // alignmentWeight: 1 / 8, RGB
+  separationWeight: 6,
+  separationThreshold: 1 / 256,
+  velocityWeight: 1
 };
 
 class Automata {
@@ -116,6 +125,7 @@ const createVertexShader = gl => {
   );
 };
 
+const toArray = value => (_.isArray(value) ? value : [value]);
 const gpgpu = (gl, options) => {
   const { shaderCode, uniformDefinitions } = options;
   const vertexShader = createVertexShader(gl);
@@ -153,15 +163,15 @@ const gpgpu = (gl, options) => {
     gl.useProgram(program);
     gl.enableVertexAttribArray(coordLoc);
     _.forOwn(mappedUniforms, (props, name) => {
-      gl[props.type](props.loc, ...uniforms[name]);
+      gl[props.type](props.loc, ...toArray(uniforms[name]));
     });
     gl.drawElements(gl.TRIANGLE_FAN, 4, gl.UNSIGNED_BYTE, 0);
   };
 };
 
-const createColorAutomata = (canvasEl, code, { width, height }) => {
+const createColorAutomata = (canvasEl, code, options) => {
   const gl = canvasEl.getContext("webgl");
-
+  const { width, height } = options;
   const updateVelocity = gpgpu(gl, {
     shaderCode: code.velocityShader,
     uniformDefinitions: {
@@ -170,7 +180,11 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
       cohesion: { type: "uniform1i" },
       separation: { type: "uniform1i" },
       size: { type: "uniform2f" },
-      time: { type: "uniform1f" }
+      velocityWeight: { type: "uniform1f" },
+      alignmentWeight: { type: "uniform1f" },
+      cohesionWeight: { type: "uniform1f" },
+      separationWeight: { type: "uniform1f" },
+      velocityEase: { type: "uniform1f" }
     }
   });
 
@@ -188,7 +202,8 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     uniformDefinitions: {
       positionTex: { type: "uniform1i" },
       velocityTex: { type: "uniform1i" },
-      size: { type: "uniform2f" }
+      size: { type: "uniform2f" },
+      invertBounce: { type: "uniform1f" }
     }
   });
 
@@ -204,7 +219,8 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     shaderCode: code.separationShader,
     uniformDefinitions: {
       tex: { type: "uniform1i" },
-      size: { type: "uniform2f" }
+      size: { type: "uniform2f" },
+      separationThreshold: { type: "uniform1f" }
     }
   });
 
@@ -217,11 +233,22 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
   });
 
   const automata = new Automata(gl, { width, height });
+  const {
+    invertBounce,
+    separationThreshold,
+    alignmentWeight,
+    cohesionWeight,
+    separationWeight,
+    velocityEase,
+    velocityWeight
+  } = options;
+  console.log(options);
   const nextFrame = function() {
     invertVelocity(automata.frameBuffer("prevVelocity"), {
       positionTex: [automata.textureUnit("prevPosition")],
       velocityTex: [automata.textureUnit("nextVelocity")],
-      size: [gl.canvas.width, gl.canvas.height]
+      size: [gl.canvas.width, gl.canvas.height],
+      invertBounce
     });
 
     neighborAverage(automata.frameBuffer("cohesion"), {
@@ -236,7 +263,8 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
 
     separation(automata.frameBuffer("separation"), {
       tex: [automata.textureUnit("prevPosition")],
-      size: [gl.canvas.width, gl.canvas.height]
+      size: [gl.canvas.width, gl.canvas.height],
+      separationThreshold
     });
 
     updateVelocity(automata.frameBuffer("nextVelocity"), {
@@ -245,7 +273,12 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
       cohesion: [automata.textureUnit("cohesion")],
       separation: [automata.textureUnit("separation")],
       size: [gl.canvas.width, gl.canvas.height],
-      time: [performance.now() / 1000]
+      time: [performance.now() / 1000],
+      alignmentWeight,
+      separationWeight,
+      cohesionWeight,
+      velocityEase,
+      velocityWeight
     });
 
     updatePosition(automata.frameBuffer("nextPosition"), {

@@ -38,7 +38,7 @@ class App extends Component {
           }}
           preview={props => <ColorAutomata {...props} />}
           full={props => (
-            <ColorAutomata {...props} width="1024" height="1024" />
+            <ColorAutomata {...props} width="2048" height="2048" />
           )}
         />
       </div>

@@ -49,7 +49,7 @@ export const randomImage = ({ width, height }) => {
 };
 export const blankImage = ({ width, height }) => {
   let buffer = new Uint8Array(3 * width * height);
-  buffer.fill(0, 0, buffer.length);
+  buffer.fill(128, 0, buffer.length);
   return buffer;
 };
 

@@ -60,7 +60,7 @@ class Automata {
     this.frameBuffers = [];
     const seed = randomImage({ width, height });
     for (let idx = 0; idx < 7; idx++) {
-      const image = idx < 1 ? seed : blankImage({ width, height });
+      const image = idx <= 1 ? seed : blankImage({ width, height });
       const texture = createTexture(gl, gl[`TEXTURE${idx}`], image, {
         width,
         height
@@ -86,15 +86,15 @@ class Automata {
     switch (id) {
       case "prevPosition":
         return this.active ? 0 : 1;
-      case "prevVelocity":
-        return 2;
       case "nextPosition":
         return this.active ? 1 : 0;
+      case "prevVelocity":
+        return 2;
       case "nextVelocity":
         return 3;
-      case "positionAverage":
+      case "cohesion":
         return 4;
-      case "velocityAverage":
+      case "alignment":
         return 5;
       case "separation":
         return 6;
@@ -165,8 +165,9 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
   const updateVelocity = gpgpu(gl, {
     shaderCode: code.velocityShader,
     uniformDefinitions: {
-      velocityAverage: { type: "uniform1i" },
-      positionAverage: { type: "uniform1i" },
+      previousVelocity: { type: "uniform1i" },
+      alignment: { type: "uniform1i" },
+      cohesion: { type: "uniform1i" },
       separation: { type: "uniform1i" },
       size: { type: "uniform2f" },
       time: { type: "uniform1f" }
@@ -217,12 +218,18 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
 
   const automata = new Automata(gl, { width, height });
   const nextFrame = function() {
-    neighborAverage(automata.frameBuffer("positionAverage"), {
+    invertVelocity(automata.frameBuffer("prevVelocity"), {
+      positionTex: [automata.textureUnit("prevPosition")],
+      velocityTex: [automata.textureUnit("nextVelocity")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
+
+    neighborAverage(automata.frameBuffer("cohesion"), {
       tex: [automata.textureUnit("prevPosition")],
       size: [gl.canvas.width, gl.canvas.height]
     });
 
-    neighborAverage(automata.frameBuffer("velocityAverage"), {
+    neighborAverage(automata.frameBuffer("alignment"), {
       tex: [automata.textureUnit("prevVelocity")],
       size: [gl.canvas.width, gl.canvas.height]
     });
@@ -233,8 +240,9 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
     });
 
     updateVelocity(automata.frameBuffer("nextVelocity"), {
-      velocityAverage: [automata.textureUnit("velocityAverage")],
-      positionAverage: [automata.textureUnit("positionAverage")],
+      previousVelocity: [automata.textureUnit("prevVelocity")],
+      alignment: [automata.textureUnit("alignment")],
+      cohesion: [automata.textureUnit("cohesion")],
       separation: [automata.textureUnit("separation")],
       size: [gl.canvas.width, gl.canvas.height],
       time: [performance.now() / 1000]
@@ -246,13 +254,8 @@ const createColorAutomata = (canvasEl, code, { width, height }) => {
       size: [gl.canvas.width, gl.canvas.height]
     });
 
-    invertVelocity(automata.frameBuffer("prevVelocity"), {
-      positionTex: [automata.textureUnit("nextPosition")],
-      velocityTex: [automata.textureUnit("nextVelocity")],
-      size: [gl.canvas.width, gl.canvas.height]
-    });
-
     display(null, {
+      // tex: [automata.textureUnit("nextVelocity")],
       tex: [automata.textureUnit("nextPosition")],
       size: [gl.canvas.width, gl.canvas.height]
     });

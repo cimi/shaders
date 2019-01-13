@@ -4,10 +4,12 @@ uniform sampler2D positionTex;
 uniform sampler2D velocityTex;
 uniform vec2 size;
 
+uniform float invertBounce;
+
 // include utils.frag
 
 float isOnEdge(float v) {
-  return v >= 1. || v <= 0. ? -.5 : 1.;
+  return v >= 1. || v <= 0. ? -1. * invertBounce : 1.;
 }
 
 vec3 invertVelocity(vec3 position, vec3 velocity) {

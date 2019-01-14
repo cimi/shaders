@@ -56,10 +56,10 @@ ColorAutomata.defaultProps = {
   velocityEase: 0.33,
   invertBounce: 0.66,
   cohesionWeight: 1,
-  alignmentWeight: 1 / 10,
+  alignmentWeight: 1 / 8,
   // alignmentWeight: 1 / 8, RGB
   separationWeight: 6,
-  separationThreshold: 1 / 256,
+  separationThreshold: 1 / 2,
   velocityWeight: 1
 };
 

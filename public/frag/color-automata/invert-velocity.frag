@@ -8,15 +8,33 @@ uniform float invertBounce;
 
 // include utils.frag
 
-float isOnEdge(float v) {
-  return v >= 1. || v <= 0. ? -1. * invertBounce : 1.;
+bool isOnEdge(float position) {
+  return position >= 1. || position <= 0.;
+}
+
+float boost(float velocity) {
+  if (velocity >= -.1 && velocity <= 0.) {
+    return -.1;
+  }
+  if (velocity <= .1 && velocity >= 0.) {
+    return .1;
+  }
+  return velocity;
+}
+
+float adjust(float velocity, float position) {
+  if (isOnEdge(position)) {
+    return -1. * invertBounce * velocity;
+  } else {
+    return velocity;
+  }
 }
 
 vec3 invertVelocity(vec3 position, vec3 velocity) {
   vec3 newVelocity;
-  newVelocity.x = isOnEdge(position.x) * velocity.x;
-  newVelocity.y = isOnEdge(position.y) * velocity.y;
-  newVelocity.z = isOnEdge(position.z) * velocity.z;
+  newVelocity.x = adjust(velocity.x, position.x);
+  newVelocity.y = adjust(velocity.y, position.y);
+  newVelocity.z = adjust(velocity.z, position.z);
   return scale(newVelocity);
 }
 
@@ -26,5 +44,4 @@ void main(void) {
   vec3 velocity = valueScaled(velocityTex, coord);
 
   gl_FragColor = vec4(invertVelocity(position, velocity), 1.);
-  // gl_FragColor = vec4(scale(velocity), 1.);
 }

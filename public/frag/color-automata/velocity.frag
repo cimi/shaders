@@ -24,7 +24,6 @@ void main(void) {
   vec3 separationValue = value(separation, coord) * separationWeight;
   vec3 original = valueScaled(previousVelocity, coord) * velocityWeight;
 
-  // vec3 nextVelocity = original + .33 * (4. * separationValue + cohesionValue + alignmentValue / 9.5);
   vec3 nextVelocity = original + velocityEase * (separationValue + cohesionValue + alignmentValue);
   gl_FragColor = vec4(scale(nextVelocity), 1.);
 }

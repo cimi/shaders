@@ -32,16 +32,16 @@ float adjust(float velocity, float position) {
 
 vec3 invertVelocity(vec3 velocity, vec3 position) {
   vec3 newVelocity;
-  newVelocity.x = adjust(velocity.x, position.x);
-  newVelocity.y = adjust(velocity.y, position.y);
-  newVelocity.z = adjust(velocity.z, position.z);
-  return scale(newVelocity);
+  newVelocity.x = adjust(velocity.x * 2. - 1., position.x);
+  newVelocity.y = adjust(velocity.y * 2. - 1., position.y);
+  newVelocity.z = adjust(velocity.z * 2. - 1., position.z);
+  return (newVelocity + 1.) / 2.;
 }
 
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
   vec3 position = value(positionTex, coord);
-  vec3 velocity = valueScaled(velocityTex, coord);
+  vec3 velocity = value(velocityTex, coord);
 
   gl_FragColor = vec4(invertVelocity(velocity, position), 1.);
 }

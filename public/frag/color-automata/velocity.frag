@@ -19,11 +19,11 @@ uniform float separationWeight;
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
 
-  vec3 alignmentValue = valueScaled(alignment, coord) * alignmentWeight;
+  vec3 alignmentValue = value(alignment, coord) * alignmentWeight;
   vec3 cohesionValue = value(cohesion, coord) * cohesionWeight;
   vec3 separationValue = value(separation, coord) * separationWeight;
-  vec3 original = valueScaled(previousVelocity, coord) * velocityWeight;
+  vec3 original = value(previousVelocity, coord) * velocityWeight;
 
   vec3 nextVelocity = original + velocityEase * (separationValue + cohesionValue + alignmentValue);
-  gl_FragColor = vec4(scale(nextVelocity), 1.);
+  gl_FragColor = vec4(nextVelocity, 1.);
 }

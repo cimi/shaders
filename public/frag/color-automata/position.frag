@@ -22,10 +22,9 @@ vec3 adjust(vec3 position) {
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
 
-  vec3 velocity = valueScaled(currentVelocity, coord);
+  vec3 velocity = value(currentVelocity, coord);
   vec3 position = value(previousPosition, coord);
 
-  vec3 nextPosition = adjust(velocity + position);
-  // vec3 nextPosition = velocity + position;
+  vec3 nextPosition = adjust((velocity * 2. - 1.) + position);
   gl_FragColor = vec4(nextPosition, 1.);
 }

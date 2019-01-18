@@ -2,6 +2,7 @@ precision highp float;
 
 uniform sampler2D previousPosition;
 uniform vec2 size;
+uniform float separationThreshold;
 
 // include utils.frag
 
@@ -19,7 +20,7 @@ vec3 diff(vec2 coords, int offsetX, int offsetY) {
     return vec3(0);
   }
   vec3 d = v(coords, 0, 0) - v(coords, offsetX, offsetY);
-  return length(d) < (8. / 256.) ? d : vec3(0);
+  return length(d) < separationThreshold ? d : vec3(0);
 }
 
 vec4 separation(vec2 coord) {

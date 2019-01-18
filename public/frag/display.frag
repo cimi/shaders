@@ -11,7 +11,7 @@ vec4 valueScaled(sampler2D texture, vec2 coord) {
 }
 
 bool isOnEdge(float v) {
-  return v >= 1. || v <= 0.;
+  return v == 1. || v == 0.;
 }
 
 vec4 hilightEdge(vec4 value) {
@@ -20,15 +20,15 @@ vec4 hilightEdge(vec4 value) {
   result.y = isOnEdge(value.y) ? abs(value.y - .22) : value.y;
   result.z = isOnEdge(value.z) ? abs(value.z - .11) : value.z;
   result[3] = 1.;
-  // if (isOnEdge(value.x) || isOnEdge(value.y) || isOnEdge(value.z)) {
-  //   return vec4(vec3(.5), 1.);
-  // }
+  if (isOnEdge(value.x) || isOnEdge(value.y) || isOnEdge(value.z)) {
+    return vec4(vec3(.5), 1.);
+  }
   return result;
 }
 
 void main(void) {
   vec2 coord = vec2(gl_FragCoord);
   // gl_FragColor = valueScaled(tex, coord);
-  gl_FragColor = hilightEdge(value(tex, coord));
-  // gl_FragColor = value(tex, coord);
+  // gl_FragColor = hilightEdge(value(tex, coord));
+  gl_FragColor = value(tex, coord);
 }

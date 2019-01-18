@@ -54,12 +54,12 @@ ColorAutomata.defaultProps = {
   width: 256,
   height: 256,
   velocityEase: 0.33,
-  invertBounce: 0.66,
+  invertBounce: 1,
   cohesionWeight: 1,
-  alignmentWeight: 1 / 8,
-  // alignmentWeight: 1 / 8, RGB
-  separationWeight: 6,
-  separationThreshold: 1 / 2,
+  alignmentWeight: 0.2, // CMYK
+  // alignmentWeight: 1 / 8, // RGB
+  separationWeight: 4,
+  separationThreshold: 1 / 32,
   velocityWeight: 1
 };
 

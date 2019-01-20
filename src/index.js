@@ -10,6 +10,5 @@ import { loadShaders } from "./loader";
 showFpsCounter(true);
 
 loadShaders().then(shaders => {
-  console.log(shaders);
   ReactDOM.render(<App shaders={shaders} />, document.getElementById("root"));
 });

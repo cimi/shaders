@@ -14,10 +14,8 @@ export class GameOfLife extends React.Component {
     loadImage("frag/game-of-life/start-state.png").then(startStateImg => {
       const { animate } = createGameOfLife(canvas, code, startStateImg);
       const step = () => {
-        console.time("step");
         animate();
         this.animationFrameReq = requestAnimationFrame(step);
-        console.timeEnd("step");
       };
       requestAnimationFrame(step);
     });
@@ -30,6 +28,7 @@ export class GameOfLife extends React.Component {
 
   render() {
     const { fragmentShader, vertexShader } = this.props.code;
+    const { width, height } = this.props.display;
     return (
       <canvas
         width="64"
@@ -37,7 +36,13 @@ export class GameOfLife extends React.Component {
         data-fragment={fragmentShader}
         data-vertex={vertexShader}
         ref={this.canvasRef}
-        style={{ width: "256px", height: "256px", imageRendering: "pixelated" }}
+        style={{
+          width: `${width}`,
+          height: `${height}`,
+          imageRendering: "pixelated",
+          display: "block",
+          margin: "auto"
+        }}
       />
     );
   }

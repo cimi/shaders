@@ -11,6 +11,7 @@ class App extends Component {
         name="Color Automata (WIP)"
         imgSrc="./frag/color-automata/color-automata.png"
         code={{
+          copyShader: shaders["frag/copy.frag"],
           displayShader: shaders["frag/display.frag"],
           velocityShader: shaders["frag/color-automata/velocity.frag"],
           positionShader: shaders["frag/color-automata/position.frag"],

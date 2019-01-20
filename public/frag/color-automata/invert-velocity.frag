@@ -9,17 +9,7 @@ uniform float invertBounce;
 // include utils.frag
 
 bool isPastEdge(float position) {
-  return position > 1. || position < 0.;
-}
-
-float boost(float velocity) {
-  if (velocity >= -.1 && velocity <= 0.) {
-    return -.1;
-  }
-  if (velocity <= .1 && velocity >= 0.) {
-    return .1;
-  }
-  return velocity;
+  return position >= 1. || position <= 0.;
 }
 
 float adjust(float velocity, float position) {

@@ -14,6 +14,7 @@ const automataShaders = automata
 const promises = [
   "frag/256-colors.frag",
   "frag/display.frag",
+  "frag/copy.frag",
   "frag/game-of-life/game-of-life.frag"
 ]
   .concat(automataShaders)

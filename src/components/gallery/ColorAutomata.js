@@ -55,8 +55,8 @@ ColorAutomata.defaultProps = {
   height: 256,
   velocityEase: 0.16,
   invertBounce: 1,
-  cohesionWeight: 1.66,
-  alignmentWeight: 1,
+  cohesionWeight: 1.6,
+  alignmentWeight: 0.8,
   separationWeight: 4,
   separationThreshold: 1 / 16,
   velocityWeight: 0.98
@@ -138,11 +138,7 @@ const gpgpu = (gl, options) => {
   const vertexArray = new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]);
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   // gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]),
-    gl.STATIC_DRAW
-  );
+  gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
 
   // Note we must bind ARRAY_BUFFER before running vertexAttribPointer!
   // This is confusing and deserves a blog post
@@ -227,6 +223,14 @@ const createColorAutomata = (canvasEl, code, options) => {
     }
   });
 
+  const copy = gpgpu(gl, {
+    shaderCode: code.copyShader,
+    uniformDefinitions: {
+      tex: { type: "uniform1i" },
+      size: { type: "uniform2f" }
+    }
+  });
+
   const display = gpgpu(gl, {
     shaderCode: code.displayShader,
     uniformDefinitions: {
@@ -284,7 +288,7 @@ const createColorAutomata = (canvasEl, code, options) => {
       invertBounce
     });
 
-    display(automata.frameBuffer("velocityBuffer"), {
+    copy(automata.frameBuffer("velocityBuffer"), {
       tex: [automata.textureUnit("aux")],
       size: [gl.canvas.width, gl.canvas.height]
     });
@@ -295,17 +299,17 @@ const createColorAutomata = (canvasEl, code, options) => {
       size: [gl.canvas.width, gl.canvas.height]
     });
 
-    display(automata.frameBuffer("colorBuffer"), {
+    copy(automata.frameBuffer("colorBuffer"), {
       tex: [automata.textureUnit("aux")],
       size: [gl.canvas.width, gl.canvas.height]
     });
 
-    display(automata.frameBuffer("velocityPrimary"), {
+    copy(automata.frameBuffer("velocityPrimary"), {
       tex: [automata.textureUnit("velocityBuffer")],
       size: [gl.canvas.width, gl.canvas.height]
     });
 
-    display(automata.frameBuffer("colorPrimary"), {
+    copy(automata.frameBuffer("colorPrimary"), {
       tex: [automata.textureUnit("colorBuffer")],
       size: [gl.canvas.width, gl.canvas.height]
     });

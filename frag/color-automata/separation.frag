@@ -15,10 +15,6 @@ vec3 v(vec2 coord, int offsetX, int offsetY) {
 }
 
 vec3 diff(vec2 coords, int offsetX, int offsetY) {
-  vec2 otherCoords = vec2(coords + vec2(offsetX, offsetY));
-  if (withinBounds(otherCoords) == 0) {
-    return vec3(0);
-  }
   vec3 d = v(coords, 0, 0) - v(coords, offsetX, offsetY);
   return length(d) < separationThreshold ? d : vec3(0);
 }

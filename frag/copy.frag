@@ -30,7 +30,5 @@ void main(void) {
   vec2 coord = vec2(gl_FragCoord);
   // gl_FragColor = valueScaled(tex, coord);
   // gl_FragColor = hilightEdge(value(tex, coord));
-  vec4 color = value(tex, coord);
-  gl_FragColor = vec4(color.r, color.g, color.b, 1.);
-  // gl_FragColor = color;
+  gl_FragColor = value(tex, coord);
 }

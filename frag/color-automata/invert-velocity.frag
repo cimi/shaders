@@ -9,17 +9,7 @@ uniform float invertBounce;
 // include utils.frag
 
 bool isPastEdge(float position) {
-  return position > 1. || position < 0.;
-}
-
-float boost(float velocity) {
-  if (velocity >= -.1 && velocity <= 0.) {
-    return -.1;
-  }
-  if (velocity <= .1 && velocity >= 0.) {
-    return .1;
-  }
-  return velocity;
+  return position >= 1. || position <= 0.;
 }
 
 float adjust(float velocity, float position) {
@@ -32,10 +22,10 @@ float adjust(float velocity, float position) {
 
 vec3 invertVelocity(vec3 velocity, vec3 position) {
   vec3 newVelocity;
-  newVelocity.x = adjust(velocity.x, position.x);
-  newVelocity.y = adjust(velocity.y, position.y);
-  newVelocity.z = adjust(velocity.z, position.z);
-  return newVelocity;
+  newVelocity.x = adjust(velocity.x * 2. - 1., position.x);
+  newVelocity.y = adjust(velocity.y * 2. - 1., position.y);
+  newVelocity.z = adjust(velocity.z * 2. - 1., position.z);
+  return (newVelocity + 1.) / 2.;
 }
 
 void main(void) {

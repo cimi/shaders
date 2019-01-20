@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { HashRouter as Router, Route, Link } from "react-router-dom";
 import { GalleryItem } from "./components/GalleryItem";
 import { GlslModal } from "./components/GlslModal";
 import { GameOfLife } from "./components/gallery/GameOfLife";

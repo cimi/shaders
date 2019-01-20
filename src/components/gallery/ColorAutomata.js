@@ -53,14 +53,13 @@ export class ColorAutomata extends React.Component {
 ColorAutomata.defaultProps = {
   width: 256,
   height: 256,
-  velocityEase: 0.33,
+  velocityEase: 0.16,
   invertBounce: 1,
-  cohesionWeight: 0.5,
-  alignmentWeight: 0.5, // CMYK
-  // alignmentWeight: 1 / 8, // RGB
+  cohesionWeight: 1.66,
+  alignmentWeight: 1,
   separationWeight: 4,
-  separationThreshold: 1 / 2,
-  velocityWeight: 1
+  separationThreshold: 1 / 16,
+  velocityWeight: 0.98
 };
 
 class Automata {
@@ -68,7 +67,7 @@ class Automata {
     this.active = 1;
     this.frameBuffers = [];
     const seed = randomImage({ width, height });
-    for (let idx = 0; idx < 7; idx++) {
+    for (let idx = 0; idx < 8; idx++) {
       const image = idx <= 1 ? seed : blankImage({ width, height });
       const texture = createTexture(gl, gl[`TEXTURE${idx}`], image, {
         width,
@@ -93,13 +92,13 @@ class Automata {
 
   textureUnit(id) {
     switch (id) {
-      case "prevPosition":
-        return this.active ? 0 : 1;
-      case "nextPosition":
-        return this.active ? 1 : 0;
-      case "prevVelocity":
+      case "colorBuffer":
+        return 0;
+      case "colorPrimary":
+        return 1;
+      case "velocityBuffer":
         return 2;
-      case "nextVelocity":
+      case "velocityPrimary":
         return 3;
       case "cohesion":
         return 4;
@@ -107,6 +106,8 @@ class Automata {
         return 5;
       case "separation":
         return 6;
+      case "aux":
+        return 7;
       default:
         throw new Error("id not recognized");
     }
@@ -134,7 +135,9 @@ const gpgpu = (gl, options) => {
   const coordLoc = gl.getAttribLocation(program, "coord");
 
   const vertexBuffer = gl.createBuffer();
+  const vertexArray = new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]);
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  // gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
   gl.bufferData(
     gl.ARRAY_BUFFER,
     new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]),
@@ -244,31 +247,24 @@ const createColorAutomata = (canvasEl, code, options) => {
   } = options;
   console.log(options);
   const nextFrame = function() {
-    invertVelocity(automata.frameBuffer("prevVelocity"), {
-      positionTex: [automata.textureUnit("prevPosition")],
-      velocityTex: [automata.textureUnit("nextVelocity")],
-      size: [gl.canvas.width, gl.canvas.height],
-      invertBounce
-    });
-
     neighborAverage(automata.frameBuffer("cohesion"), {
-      tex: [automata.textureUnit("prevPosition")],
+      tex: [automata.textureUnit("colorPrimary")],
       size: [gl.canvas.width, gl.canvas.height]
     });
 
     neighborAverage(automata.frameBuffer("alignment"), {
-      tex: [automata.textureUnit("prevVelocity")],
+      tex: [automata.textureUnit("velocityPrimary")],
       size: [gl.canvas.width, gl.canvas.height]
     });
 
     separation(automata.frameBuffer("separation"), {
-      tex: [automata.textureUnit("prevPosition")],
+      tex: [automata.textureUnit("colorPrimary")],
       size: [gl.canvas.width, gl.canvas.height],
       separationThreshold
     });
 
-    updateVelocity(automata.frameBuffer("nextVelocity"), {
-      previousVelocity: [automata.textureUnit("prevVelocity")],
+    updateVelocity(automata.frameBuffer("velocityBuffer"), {
+      previousVelocity: [automata.textureUnit("velocityPrimary")],
       alignment: [automata.textureUnit("alignment")],
       cohesion: [automata.textureUnit("cohesion")],
       separation: [automata.textureUnit("separation")],
@@ -281,20 +277,43 @@ const createColorAutomata = (canvasEl, code, options) => {
       velocityWeight
     });
 
-    updatePosition(automata.frameBuffer("nextPosition"), {
-      previousPosition: [automata.textureUnit("prevPosition")],
-      currentVelocity: [automata.textureUnit("nextVelocity")],
+    invertVelocity(automata.frameBuffer("aux"), {
+      positionTex: [automata.textureUnit("colorBuffer")],
+      velocityTex: [automata.textureUnit("velocityBuffer")],
+      size: [gl.canvas.width, gl.canvas.height],
+      invertBounce
+    });
+
+    display(automata.frameBuffer("velocityBuffer"), {
+      tex: [automata.textureUnit("aux")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
+
+    updatePosition(automata.frameBuffer("aux"), {
+      previousPosition: [automata.textureUnit("colorBuffer")],
+      currentVelocity: [automata.textureUnit("velocityBuffer")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
+
+    display(automata.frameBuffer("colorBuffer"), {
+      tex: [automata.textureUnit("aux")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
+
+    display(automata.frameBuffer("velocityPrimary"), {
+      tex: [automata.textureUnit("velocityBuffer")],
+      size: [gl.canvas.width, gl.canvas.height]
+    });
+
+    display(automata.frameBuffer("colorPrimary"), {
+      tex: [automata.textureUnit("colorBuffer")],
       size: [gl.canvas.width, gl.canvas.height]
     });
 
     display(null, {
-      // tex: [automata.textureUnit("nextVelocity")],
-      tex: [automata.textureUnit("nextPosition")],
+      tex: [automata.textureUnit("colorPrimary")],
       size: [gl.canvas.width, gl.canvas.height]
     });
-    automata.swap();
-
-    // display(null, { });
   };
   return { automata, nextFrame };
 };

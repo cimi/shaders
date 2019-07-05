@@ -23,7 +23,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "classnames": "^2.2.5",
@@ -33,12 +35,14 @@
     "react-addons-css-transition-group": "^15.6.2",
     "react-dom": "^16.3.0",
     "react-router-dom": "^4.3.1",
-    "stats.js": "^0.17.0"
+    "stats.js": "^0.17.0",
+    "snyk": "^1.192.0"
   },
   "browserslist": [
     ">0.2%",
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "snyk": true
 }

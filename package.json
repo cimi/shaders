@@ -31,7 +31,7 @@
     "lodash": "^4.17.13",
     "react": "^16.3.0",
     "react-addons-css-transition-group": "^15.6.2",
-    "react-dom": "^16.3.0",
+    "react-dom": "^16.3.3",
     "react-router-dom": "^4.3.1",
     "stats.js": "^0.17.0"
   },

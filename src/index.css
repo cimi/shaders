@@ -65,5 +65,5 @@ body {
 }
 
 .gallery-modal.square canvas {
-  margin: 50px auto;
+  margin: 25px auto 0;
 }

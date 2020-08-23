@@ -19,7 +19,7 @@ const promises = [
 ]
   .concat(automataShaders)
   .map(frag =>
-    fetch(frag)
+    fetch(process.env.PUBLIC_URL + "/" + frag)
       .then(response => response.text())
       .then(responseText => ({ [frag]: responseText }))
   );

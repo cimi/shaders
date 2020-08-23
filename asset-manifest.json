@@ -1,13 +1,22 @@
 {
-  "main.css": "/shaders/static/css/main.67eb5e3f.chunk.css",
-  "main.js": "/shaders/static/js/main.764ac459.chunk.js",
-  "main.js.map": "/shaders/static/js/main.764ac459.chunk.js.map",
-  "static/js/1.7788fee5.chunk.js": "/shaders/static/js/1.7788fee5.chunk.js",
-  "static/js/1.7788fee5.chunk.js.map": "/shaders/static/js/1.7788fee5.chunk.js.map",
-  "runtime~main.js": "/shaders/static/js/runtime~main.e8900114.js",
-  "runtime~main.js.map": "/shaders/static/js/runtime~main.e8900114.js.map",
-  "static/css/main.67eb5e3f.chunk.css.map": "/shaders/static/css/main.67eb5e3f.chunk.css.map",
-  "index.html": "/shaders/index.html",
-  "precache-manifest.4a350a009fcde8db99b187a8a5828307.js": "/shaders/precache-manifest.4a350a009fcde8db99b187a8a5828307.js",
-  "service-worker.js": "/shaders/service-worker.js"
+  "files": {
+    "main.css": "/shaders/static/css/main.496e7714.chunk.css",
+    "main.js": "/shaders/static/js/main.641a7801.chunk.js",
+    "main.js.map": "/shaders/static/js/main.641a7801.chunk.js.map",
+    "runtime-main.js": "/shaders/static/js/runtime-main.a3f1e818.js",
+    "runtime-main.js.map": "/shaders/static/js/runtime-main.a3f1e818.js.map",
+    "static/js/2.7299e1d7.chunk.js": "/shaders/static/js/2.7299e1d7.chunk.js",
+    "static/js/2.7299e1d7.chunk.js.map": "/shaders/static/js/2.7299e1d7.chunk.js.map",
+    "index.html": "/shaders/index.html",
+    "precache-manifest.32cc07ef518a1985ec7748c52166592e.js": "/shaders/precache-manifest.32cc07ef518a1985ec7748c52166592e.js",
+    "service-worker.js": "/shaders/service-worker.js",
+    "static/css/main.496e7714.chunk.css.map": "/shaders/static/css/main.496e7714.chunk.css.map",
+    "static/js/2.7299e1d7.chunk.js.LICENSE.txt": "/shaders/static/js/2.7299e1d7.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.a3f1e818.js",
+    "static/js/2.7299e1d7.chunk.js",
+    "static/css/main.496e7714.chunk.css",
+    "static/js/main.641a7801.chunk.js"
+  ]
 }

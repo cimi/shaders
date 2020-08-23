@@ -39,7 +39,7 @@ void main(void) {
         abs(cos(modifier * u_time)),
         sin(modifier * u_time * .8),
         fract(modifier * u_time * .5));
-    float opacity = abs(sin(u_time * 1.3 * modifier)) * box(st, vec2(0.05));
+    float opacity = (abs(sin(u_time * 1.3 * modifier)) + .01) * box(st, vec2(0.05));
 
     gl_FragColor = vec4(vec3(color), opacity);
 }
